@@ -8,8 +8,6 @@ public class PlayerControls : MonoBehaviour
     public static event Action<Vector3, int> OnStomp;
 
     public int PlayerId = 0;
-    public bool hasInput = true;
-    public KeyCode JumpKey, StompKey;
     public Rigidbody rbody;
     public Vector3 jumpForce, stompForce;
     public float movespeed = 3;
@@ -19,6 +17,8 @@ public class PlayerControls : MonoBehaviour
     public bool isInTheAir { get { return isJumping || isStomping; } }
     private float lastJumpTimestamp = float.MinValue;
 
+    private Rewired.Player player;
+
     public void Setup(int playerid)
     {
         PlayerId = playerid;
@@ -26,20 +26,19 @@ public class PlayerControls : MonoBehaviour
 
     void Update()
     {
-        if(hasInput)
+        player = Rewired.ReInput.players.GetPlayer("Player" + PlayerId); // get the player by id
+
+        if (player.GetButtonDown("Jump"))
         {
-		    if(Input.GetKey(JumpKey))
-            {
-                DoJump();
-            }
-
-            if (Input.GetKey(StompKey))
-            {
-                DoStomp();
-            }
-
-            DoInput(Input.GetAxis("Horizontal"), Input.GetAxis("Vertical"));
+            DoJump();
         }
+
+        if (player.GetButtonDown("Stomp"))
+        {
+            DoStomp();
+        }
+
+        DoInput(player.GetAxis("Move Horizontal"), player.GetAxis("Move Vertically"));
     }
 
     void OnCollisionEnter(Collision collision)
@@ -67,9 +66,10 @@ public class PlayerControls : MonoBehaviour
     private void OnTriggerEnter(Collider other)
     {
         //Start herer
-        if(other.tag == "Stomp" && isGrounded)
+        Stomp stomper = other.transform.parent.GetComponent<Stomp>();
+        if (other.tag == "Stomp" && isGrounded && stomper != null && stomper.belongsToPlayerId != PlayerId)
         {
-            PerformStompHit((transform.position - other.transform.position).normalized, other.GetComponent<Stomp>().force);
+            PerformStompHit((transform.position - other.transform.position).normalized + Vector3.up * 0.3f, stomper.force);
         }
     }
 
@@ -118,6 +118,6 @@ public class PlayerControls : MonoBehaviour
 
     void PerformStompHit(Vector3 dir, float force)
     {
-        rbody.AddForce(dir * force, ForceMode.VelocityChange);
+        rbody.AddForce(dir * force, ForceMode.Impulse);
     }
 }
