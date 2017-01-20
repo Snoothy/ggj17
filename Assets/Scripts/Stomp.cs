@@ -8,12 +8,14 @@ public class Stomp : MonoBehaviour
     public AnimationCurve scaleCurve;
     public int belongsToPlayerId;
     public float force = 5;
+    public Renderer MyRenderer;
      
-    public void Init(int playerid)
+    public void Init(int playerid, Color _color)
     {
         belongsToPlayerId = playerid;
         GameObject.Destroy(this.gameObject, scaleTime);
         StartCoroutine(DoScale());
+        MyRenderer.material.color = _color;
     }
 
     IEnumerator DoScale()
