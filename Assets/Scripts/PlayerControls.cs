@@ -13,7 +13,26 @@ public class PlayerControls : MonoBehaviour
     public float movespeed = 3;
     public float maxspeed = 3;
 
-    public MoveState state = MoveState.none;
+    private MoveState _stateInner = MoveState.none;
+    public MoveState state
+    {
+        get { return _stateInner; }
+        set
+        {
+            _stateInner = value;
+            switch(_stateInner)
+            {
+                case MoveState.chargingJump:
+                case MoveState.chargingStomp: MyFace.sprite = FaceCharging; break;
+                case MoveState.jumping: MyFace.sprite = FaceJump; break;
+                case MoveState.hit:
+                case MoveState.afterStomp: MyFace.sprite = FaceStunned; break;
+                case MoveState.prepareStomp:
+                case MoveState.stomping: MyFace.sprite = FacePound; break;
+                case MoveState.none: MyFace.sprite = FaceNormal; break;
+            }
+        }
+    }
     public bool isGrounded;
     public bool isInTheAir { get { return !isGrounded; } }
     private float lastJumpTimestamp = float.MinValue;
@@ -32,25 +51,46 @@ public class PlayerControls : MonoBehaviour
     private Rewired.Player player;
 
     public Renderer MyRenderer;
+    public SpriteRenderer MyFace;
+    public Sprite FaceNormal, FaceStunned, FacePound, FaceCharging, FaceJump;
     public ParticleSystem psystem;
 
-    public void Setup(int playerid)
+    public Screenshake screenshaker;
+
+    public Color color { get { return MyRenderer.material.color; } }
+    public PlayerColor playercolor = PlayerColor.none;
+
+    public void Setup(int playerid, PlayerColor mycolor)
     {
         PlayerId = playerid;
+        SetColor(mycolor);
     }
 
+    static int TEMPVAR = 1;
     private void Start()
     {
-        switch (PlayerId)
+        screenshaker = GameObject.FindGameObjectWithTag("MainCamera").GetComponent<Screenshake>();
+        if(playercolor == PlayerColor.none)
         {
-            case 0: MyRenderer.material.color = Color.red; break;
-            case 1: MyRenderer.material.color = Color.blue; break;
-            case 2: MyRenderer.material.color = Color.green; break;
-            case 3: MyRenderer.material.color = Color.yellow; break;
-            case 4: MyRenderer.material.color = Color.black; break;
-            case 5: MyRenderer.material.color = Color.grey; break;
+            SetColor((PlayerColor)(TEMPVAR++));
         }
-        transform.position += Vector3.right * PlayerId;
+        //transform.position += Vector3.right * PlayerId;
+    }
+
+    private void SetColor(PlayerColor mycolor)
+    {
+        playercolor = mycolor;
+        switch (playercolor)
+        {
+            case PlayerColor.blue: MyRenderer.material.color = Color.blue; break;
+            case PlayerColor.green: MyRenderer.material.color = Color.green; break;
+            case PlayerColor.orange: MyRenderer.material.color = new Color(255, 176, 32); break;
+            case PlayerColor.pink: MyRenderer.material.color = new Color(255, 170, 207); break;
+            case PlayerColor.magenta: MyRenderer.material.color = Color.magenta; break;
+            case PlayerColor.red: MyRenderer.material.color = Color.red; break;
+            case PlayerColor.teal: MyRenderer.material.color = new Color(2, 250, 255); break;
+            case PlayerColor.yellow: MyRenderer.material.color = Color.yellow; break;
+        }
     }
 
     void Update()
@@ -138,7 +178,7 @@ public class PlayerControls : MonoBehaviour
     {
         //Start herer
         Stomp stomper = other.transform.parent.GetComponent<Stomp>();
-        if (other.tag == "Stomp" && isGrounded && stomper != null && stomper.belongsToPlayerId != PlayerId)
+        if (other.tag == "Stomp" && isGrounded && stomper != null && stomper.color != color)
         {
             PerformStompHit((transform.position - other.transform.position).normalized + Vector3.up * 0.3f, stomper.force);
         }
@@ -233,7 +273,8 @@ public class PlayerControls : MonoBehaviour
     {
         lastStompTimestamp = Time.time;
         state = MoveState.afterStomp;
-        if(OnStomp != null)
+        screenshaker.Shake(currentStompForce / stompForce.y);
+        if (OnStomp != null)
         {
             OnStomp(position, PlayerId, MyRenderer.material.color, currentStompForce/stompForce.y);
             Debug.Log("STOMP TIME: " + currentStompForce / stompForce.y);
@@ -251,3 +292,4 @@ public class PlayerControls : MonoBehaviour
 }
 
 public enum MoveState { none, chargingJump, chargingStomp, stomping, jumping, hit, afterStomp, prepareStomp }
+public enum PlayerColor { /*black, white,*/ none, green, red, yellow, blue, orange, magenta, teal, pink }

@@ -9,6 +9,7 @@ public class Stomp : MonoBehaviour
     public int belongsToPlayerId;
     public float force = 5;
     public Renderer MyRenderer;
+    public Color color { get { return MyRenderer.material.color; } }
      
     public void Init(int playerid, Color _color, float forceNormalized)
     {
