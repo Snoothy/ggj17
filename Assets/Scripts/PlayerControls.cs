@@ -17,6 +17,7 @@ public class PlayerControls : MonoBehaviour
     private MoveState _stateInner = MoveState.none;
     private GameController GameController;
     private int Wins = 0;
+    public int GetWins { get { return Wins; } }
 
     public MoveState state
     {
