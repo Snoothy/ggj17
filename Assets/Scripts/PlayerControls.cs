@@ -1,6 +1,7 @@
-﻿using System;
+﻿﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using UnityEngine;
 
 public class PlayerControls : MonoBehaviour
@@ -14,6 +15,8 @@ public class PlayerControls : MonoBehaviour
     public float maxspeed = 3;
 
     private MoveState _stateInner = MoveState.none;
+    private GameController GameController;
+
     public MoveState state
     {
         get { return _stateInner; }
@@ -29,7 +32,6 @@ public class PlayerControls : MonoBehaviour
                 case MoveState.afterStomp: MyFace.sprite = FaceStunned; break;
                 case MoveState.prepareStomp:
                 case MoveState.stomping: MyFace.sprite = FacePound; break;
-                case MoveState.none: MyFace.sprite = FaceNormal; break;
             }
         }
     }
@@ -82,8 +84,10 @@ public class PlayerControls : MonoBehaviour
     public Color color { get { return MyRenderer.material.color; } }
     public PlayerColor playercolor = PlayerColor.green;
 
-    public void Setup(int playerid, PlayerColor mycolor)
+    public void Setup(int playerid, PlayerColor mycolor, GameController gameController)
     {
+        DisablePlayer();
+        GameController = gameController;
         PlayerId = playerid;
         SetColor(mycolor);
     }
@@ -111,8 +115,25 @@ public class PlayerControls : MonoBehaviour
         }
     }
 
+    public void EnablePlayer()
+    {
+        var rb = GetComponent<Rigidbody>();
+        rb.isKinematic = false;
+    }
+
+    public void DisablePlayer()
+    {
+        var rb = GetComponent<Rigidbody>();
+        rb.isKinematic = true;
+    }
+
     void Update()
     {
+        if (!GameController.IsGameStarted())
+        {
+
+            return;
+        }
         player = Rewired.ReInput.players.GetPlayer("Player" + PlayerId); // get the player by id
 
         if (state == MoveState.afterStomp)
@@ -244,6 +265,16 @@ public class PlayerControls : MonoBehaviour
             lastStompTimestamp = Time.time;
         }
     }*/
+
+    public void NextHat()
+    {
+        // TODO
+    }
+
+    public void PrevHat()
+    {
+        // TODO
+    }
 
     public void DoStomp()
     {
