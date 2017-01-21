@@ -129,6 +129,7 @@ public class PlayerControls : MonoBehaviour
     {
         IsAlive = true;
         rbody.velocity = Vector3.zero;
+        state = MoveState.hit;
     }
 
     public void Die()
