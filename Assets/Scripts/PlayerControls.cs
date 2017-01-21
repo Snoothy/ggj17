@@ -144,7 +144,7 @@ public class PlayerControls : MonoBehaviour
         if (IsAlive)
         {
             IsAlive = false;
-            SoundManager.Instance.PlaySound(SoundManager.Instance.acExplode);
+            SoundManager.Instance.PlaySound(SoundManager.Instance.scExplode);
         }
     }
 
@@ -352,7 +352,7 @@ public class PlayerControls : MonoBehaviour
             state = MoveState.jumping;
             lastJumpTimestamp = Time.time;
             StartCoroutine(SpawnDust(0.05f, transform.position));
-            SoundManager.Instance.PlaySound(SoundManager.Instance.acJump);
+            SoundManager.Instance.PlaySound(SoundManager.Instance.scJump);
         }
     }
 
@@ -395,7 +395,7 @@ public class PlayerControls : MonoBehaviour
             currentStompForce = (range / maxStompRange) * stompForce.y;
             state = MoveState.prepareStomp;
             StartCoroutine(StompAfterDelay());
-            SoundManager.Instance.PlaySound(SoundManager.Instance.acStompBegin);
+            SoundManager.Instance.PlaySound(SoundManager.Instance.scStompBegin);
         }
     }
 
@@ -461,7 +461,7 @@ public class PlayerControls : MonoBehaviour
             OnStomp(position, PlayerId, MyRenderer.material.color, currentStompForce / stompForce.y);
         }
         psystem.Emit(20);
-        SoundManager.Instance.PlaySound(SoundManager.Instance.acStomp);
+        SoundManager.Instance.PlaySound(SoundManager.Instance.scStomp);
     }
 
     void PerformStompHit(Vector3 dir, float force)
@@ -471,9 +471,9 @@ public class PlayerControls : MonoBehaviour
         isGrounded = false;
         state = MoveState.hit;
         lastJumpTimestamp = Time.time;
-        SoundManager.Instance.PlaySound(SoundManager.Instance.acHit);
+        SoundManager.Instance.PlaySound(SoundManager.Instance.scHit);
         if (rbody.velocity.magnitude > 8)
-            SoundManager.Instance.PlaySound(SoundManager.Instance.acHardHit);
+            SoundManager.Instance.PlaySound(SoundManager.Instance.scHardHit);
     }
 }
 
