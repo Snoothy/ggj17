@@ -33,7 +33,8 @@ public class Hat : MonoBehaviour
         {
             Hats[id].enabled = true;
             CurrentHat = id;
-            SoundManager.Instance.PlayHatSound(id);
+            SoundManager.Instance.PlaySound(SoundManager.Instance.scSelect);
+            //SoundManager.Instance.PlayHatSound(id);
         }
     }
 
