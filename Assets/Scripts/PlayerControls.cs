@@ -178,7 +178,7 @@ public class PlayerControls : MonoBehaviour
 
     void Update()
     {
-        if (!GameController.IsGameStarted() || !IsAlive)
+        if (!GameController.IsGameStarted || !IsAlive)
         {
 
             return;
