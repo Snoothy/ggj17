@@ -8,7 +8,7 @@ public class Hat : MonoBehaviour
     private List<SpriteRenderer> Hats;
     private int CurrentHat = 0;
 	// Use this for initialization
-	void Start ()
+	void Awake ()
 	{
 	    Hats = gameObject.GetComponentsInChildren<SpriteRenderer>().ToList();
 	}
@@ -44,6 +44,7 @@ public class Hat : MonoBehaviour
 
     public void PrevHat()
     {
-        SetHat((CurrentHat - 1) % Hats.Count);
+        var wrap = CurrentHat - 1 < 0 ? Hats.Count - 1 : CurrentHat - 1;
+        SetHat(wrap);
     }
 }

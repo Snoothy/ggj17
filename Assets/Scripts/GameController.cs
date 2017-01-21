@@ -13,6 +13,7 @@ public class GameController : MonoBehaviour
     private Dictionary<int, PlayerControls> ActivePlayers = new Dictionary<int, PlayerControls>();
 
     private bool _gameStarted = false;
+    private bool _gameIsStarting = false;
 
 	// Use this for initialization
 	void Start () {
@@ -29,7 +30,7 @@ public class GameController : MonoBehaviour
 	
 	// Update is called once per frame
 	void Update () {
-	    if (_gameStarted)
+	    if (_gameStarted || _gameIsStarting)
 	    {
 
 	    }
@@ -106,6 +107,7 @@ public class GameController : MonoBehaviour
 
     IEnumerator GameStart()
     {
+        _gameIsStarting = true;
         // TODO  move players to center
         yield return StartCoroutine(CenterPlayers());
 
