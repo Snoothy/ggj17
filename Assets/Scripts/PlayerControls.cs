@@ -17,7 +17,9 @@ public class PlayerControls : MonoBehaviour
     private MoveState _stateInner = MoveState.none;
     private GameController GameController;
     private int Wins = 0;
+    private bool Ready = false;
     public int GetWins { get { return Wins; } }
+    public bool IsReady { get { return Ready; } }
 
     public MoveState state
     {
@@ -96,6 +98,7 @@ public class PlayerControls : MonoBehaviour
 
     private Rewired.Player player;
     private Hat Hats;
+    private Transform readyContainer;
     public Renderer MyRenderer;
     public SpriteRenderer MyFace;
     public Sprite FaceNormal, FaceStunned, FacePound, FaceCharging, FaceJump;
@@ -117,6 +120,8 @@ public class PlayerControls : MonoBehaviour
         PlayerId = playerid;
         SetColor(mycolor);
 
+        readyContainer = transform.FindChild("Ready");
+
         // Hats 
         var hatRes = Resources.Load("prefabs/Hat");
         var hatGo = (GameObject)Instantiate(hatRes);
@@ -125,8 +130,11 @@ public class PlayerControls : MonoBehaviour
         hatGo.transform.localPosition = new Vector3(0.0f, 2.5f, -0.01f);
         Hats = hatGo.GetComponent<Hat>();
         Hats.SetHat(playerid + 1);
+        ShowReady();
+        SetReady(false);
 
         ResetWins();
+        
     }
 
     public void Reset()
@@ -146,6 +154,33 @@ public class PlayerControls : MonoBehaviour
             IsAlive = false;
             SoundManager.Instance.PlaySound(SoundManager.Instance.scExplode);
         }
+    }
+
+    public void SetReady(bool state)
+    {
+        Ready = state;
+        var aSprite = readyContainer.FindChild("a").GetComponent<SpriteRenderer>();
+        var readySprite = readyContainer.FindChild("ready").GetComponent<SpriteRenderer>();
+        if (Ready)
+        {
+            readySprite.enabled = true;
+            aSprite.enabled = false;
+        }
+        else
+        {
+            readySprite.enabled = false;
+            aSprite.enabled = true;
+        }
+    }
+
+    public void HideReady()
+    {
+        readyContainer.gameObject.SetActive(false);
+    }
+
+    public void ShowReady()
+    {
+        readyContainer.gameObject.SetActive(true);
     }
 
     static int TEMPVAR = 1;
@@ -204,6 +239,7 @@ public class PlayerControls : MonoBehaviour
     {
         var rb = GetComponent<Rigidbody>();
         rb.isKinematic = false;
+        HideReady();
     }
 
     public void DisablePlayer()
