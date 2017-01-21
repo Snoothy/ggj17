@@ -52,6 +52,7 @@ public class PlayerControls : MonoBehaviour
     }
     public bool isGrounded;
     float lastGroundedTime = 0;
+    Vector3 groundedPoint = Vector3.zero;
     public float hitAfterGrounded = 0.3f;
     public bool isInTheAir { get { return !isGrounded; } }
     private float lastJumpTimestamp = float.MinValue;
@@ -180,6 +181,8 @@ public class PlayerControls : MonoBehaviour
                 state = MoveState.none;
             }
             isGrounded = true;
+            lastGroundedTime = Time.time;
+            groundedPoint = collision.contacts[0].point;
         }
     }
 
@@ -188,6 +191,8 @@ public class PlayerControls : MonoBehaviour
         if (!isGrounded && collision.contacts[0].point.y < transform.position.y && collision.collider.tag == "Ground" && Time.time - lastJumpTimestamp > 0.25f)
         {
             isGrounded = true;
+            lastGroundedTime = Time.time;
+            groundedPoint = collision.contacts[0].point;
             if(state != MoveState.afterStomp)
                 state = MoveState.none;
         }
@@ -295,7 +300,6 @@ public class PlayerControls : MonoBehaviour
         if (OnStomp != null)
         {
             OnStomp(position, PlayerId, MyRenderer.material.color, currentStompForce/stompForce.y);
-            Debug.Log("STOMP TIME: " + currentStompForce / stompForce.y);
         }
         psystem.Emit(20);
     }

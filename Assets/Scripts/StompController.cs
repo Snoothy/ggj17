@@ -12,7 +12,7 @@ public class StompController : MonoBehaviour
 
     private void PlayerControls_OnStomp(Vector3 pos, int playerid, Color color, float normalizedForce)
     {
-        pos.y +=0.37f;
+        pos.y += 0.37f;
         GameObject go = (GameObject)GameObject.Instantiate(stompPrefab, pos, stompPrefab.transform.rotation);
         go.GetComponent<Stomp>().Init(playerid, color, normalizedForce);
     }
