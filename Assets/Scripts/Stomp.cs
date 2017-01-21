@@ -8,8 +8,8 @@ public class Stomp : MonoBehaviour
     public AnimationCurve scaleCurve;
     public int belongsToPlayerId;
     public float force = 5;
-    public Renderer MyRenderer;
-    public Color color { get { return MyRenderer.material.color; } }
+    public Renderer[] MyRenderers;
+    public Color color { get { return MyRenderers[0].material.color; } }
      
     public void Init(int playerid, Color _color, float forceNormalized)
     {
@@ -18,7 +18,8 @@ public class Stomp : MonoBehaviour
         belongsToPlayerId = playerid;
         GameObject.Destroy(this.gameObject, scaleTime);
         StartCoroutine(DoScale());
-        MyRenderer.material.color = _color;
+        foreach(Renderer r in MyRenderers)
+            r.material.color = _color;
     }
 
     IEnumerator DoScale()
