@@ -17,6 +17,9 @@ public class GameController : MonoBehaviour
     private bool _gameStarted = false;
     private bool _gameIsStarting = false;
     private bool _gameOver = false;
+    private bool _gameEnded = false;
+
+    private Coroutine WinnerRoutine;
 
     public bool IsGameStarted { get { return _gameStarted; } }
     public bool IsGameStarting { get { return _gameIsStarting; } }
@@ -49,23 +52,26 @@ public class GameController : MonoBehaviour
                 if (!_gameOver)
                 {
                     winner = AlivePlayers().First();
+                    winner.Win();
                     winner.DisablePlayer();
                     _gameOver = true;
-                    StartCoroutine(MoveWinner(winner.gameObject));
+                    WinnerRoutine = StartCoroutine(MoveWinner(winner.gameObject));
+
+                    if (winner.GetWins >= 3) _gameEnded = true;
 
                     if (GameStateChanged != null)
                         GameStateChanged();
-
                 }
 
-                foreach (var rePlayer in RePlayers)
-                {
-                    if (rePlayer.GetButtonDown("Start") && ActivePlayers.ContainsKey(rePlayer.id) &&
-                        ActivePlayers.Count > 1)
-                    {
-                        StartCoroutine(ResetGame(winner));
-                    }
-                }
+
+                //foreach (var rePlayer in RePlayers)
+                //{
+                //    if (rePlayer.GetButtonDown("Start") && ActivePlayers.ContainsKey(rePlayer.id) &&
+                //        ActivePlayers.Count > 1)
+                //    {
+                //        StartCoroutine(ResetGame(winner));
+                //    }
+                //}
             }
         }
         else
@@ -89,7 +95,6 @@ public class GameController : MonoBehaviour
                 // Leave
                 if (rePlayer.GetButtonDown("Leave") && ActivePlayers.ContainsKey(rePlayer.id))
                 {
-                    UnityEngine.Debug.Log("Leeave");
                     Destroy(ActivePlayers[rePlayer.id].gameObject);
                     ActivePlayers.Remove(rePlayer.id);
 
@@ -195,20 +200,38 @@ public class GameController : MonoBehaviour
 
     IEnumerator ResetGame(PlayerControls winner)
     {
-        var i = 0;
-        foreach (var player in ActivePlayers)
+        // Clean up if game ended
+        if (_gameEnded)
         {
-            player.Value.Reset();
-            player.Value.DisablePlayer();
-            SetPlayerPosition(player.Value.gameObject, i);
-            SoundManager.Instance.PlaySound(SoundManager.Instance.acSelect);
-            i++;
-            yield return new WaitForSeconds(0.5f);
-        }
+            _gameEnded = false;
 
+            foreach (var player in ActivePlayers)
+            {
+                Destroy(ActivePlayers[player.Value.PlayerId].gameObject);
+                ActivePlayers.Remove(player.Value.PlayerId);
+            }
+        }
+        else
+        {
+            var i = 0;
+            foreach (var player in ActivePlayers)
+            {
+                player.Value.Reset();
+                player.Value.DisablePlayer();
+                SetPlayerPosition(player.Value.gameObject, i);
+                SoundManager.Instance.PlaySound(SoundManager.Instance.acSelect);
+                i++;
+                yield return new WaitForSeconds(0.5f);
+            }
+
+            // Next round
+            StartCoroutine(GameStart());
+        }
+        
         _gameStarted = false;
         _gameIsStarting = false;
         _gameOver = false;
+
         if (GameStateChanged != null)
             GameStateChanged();
         yield return null;
@@ -279,6 +302,8 @@ public class GameController : MonoBehaviour
         }
 
         // TODO confetti and sounds
+        yield return new WaitForSeconds(3.0f);
+        StartCoroutine(ResetGame(winner.GetComponent<PlayerControls>()));
 
         yield return null;
     }
