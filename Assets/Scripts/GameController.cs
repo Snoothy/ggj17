@@ -7,23 +7,18 @@ using System;
 
 public class GameController : MonoBehaviour
 {
-    public static event Action GameStateChanged;
-
     public Transform SpawnPoint;
     public GameObject PlayerPrefab;
     private List<Rewired.Player> RePlayers = new List<Rewired.Player>();
     private Dictionary<int, PlayerControls> ActivePlayers = new Dictionary<int, PlayerControls>();
 
     private bool _gameStarted = false;
+    public bool IsGameStarted { get { return _gameStarted; } }
     private bool _gameIsStarting = false;
     private bool _gameOver = false;
     private bool _gameEnded = false;
 
     private Coroutine WinnerRoutine;
-
-    public bool IsGameStarted { get { return _gameStarted; } }
-    public bool IsGameStarting { get { return _gameIsStarting; } }
-    public bool IsGameOver { get { return _gameOver; } }
 
 	// Use this for initialization
 	void Start () {
@@ -55,11 +50,12 @@ public class GameController : MonoBehaviour
                     winner.Win();
                     winner.DisablePlayer();
                     _gameOver = true;
-                    if (winner.GetWins >= 3) _gameEnded = true;
-                    WinnerRoutine = StartCoroutine(MoveWinner(winner.gameObject));
+                    if (winner.GetWins >= 3)
+                        _gameEnded = true;
+                    else
+                        SoundManager.Instance.FadeSplash();
 
-                    if (GameStateChanged != null)
-                        GameStateChanged();
+                    WinnerRoutine = StartCoroutine(MoveWinner(winner.gameObject));
                 }
             }
         }
@@ -163,12 +159,8 @@ public class GameController : MonoBehaviour
     IEnumerator GameStart()
     {
         _gameIsStarting = true;
-
+        SoundManager.Instance.FadeBattle();
         // Moves players to center
-
-        if (GameStateChanged != null)
-            GameStateChanged();
-
         // TODO  move players to center
         yield return StartCoroutine(CenterPlayers());
 
@@ -179,10 +171,8 @@ public class GameController : MonoBehaviour
 
         // Explode spawn
         Explode();
-        
+
         _gameStarted = true;
-        if (GameStateChanged != null)
-            GameStateChanged();
     }
 
     IEnumerator ResetGame(PlayerControls winner)
@@ -199,8 +189,8 @@ public class GameController : MonoBehaviour
                 ActivePlayers = new Dictionary<int, PlayerControls>();
             }
 
-            _gameStarted = false;
             _gameEnded = false;
+            _gameStarted = false;
         }
         else
         {
@@ -218,12 +208,9 @@ public class GameController : MonoBehaviour
             // Next round
             StartCoroutine(GameStart());
         }
-        
+
         _gameIsStarting = false;
         _gameOver = false;
-
-        if (GameStateChanged != null)
-            GameStateChanged();
         yield return null;
     }
 

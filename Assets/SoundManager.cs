@@ -16,19 +16,21 @@ public class SoundManager : MonoBehaviour
     public SoundClip[] hatSoundClips;
 
     public AudioSource[] sources;
+    public float FadeSecondsSplash = 4.5f;
+    public float FadeSecondsBattle = 6f;
     float[] values = new float[] { 1, 0, 0, 0, 0, 0 };
     float fadeVal = 1;
-    bool isSelectionPlaying = true, wasGameStarted = false;
+    bool isSplash = false;
 
     private void Awake()
     {
         _instance = this;
-        Fade();
+        FadeSplash();
     }
 
     private void Start()
     {
-        GameController.GameStateChanged += Fade;
+
     }
 
     private void Update()
@@ -37,52 +39,41 @@ public class SoundManager : MonoBehaviour
         {
             sources[i].volume = sources[i].volume * (1f - fadeVal) + values[i] * fadeVal;
         }
-        fadeVal += Time.deltaTime * 0.35f;
+        fadeVal += Time.deltaTime / (isSplash ? FadeSecondsSplash : FadeSecondsBattle);
         fadeVal = Mathf.Clamp(fadeVal, 0, 1);
     }
 
-    void Fade()
+    public void FadeSplash()
     {
-        if(gc.IsGameStarted != wasGameStarted)
+        Debug.Log("SPLASH");
+        isSplash = true;
+        fadeVal = 0;
+
+        values[0] = 0;
+        values[1] = 0.5f;
+        values[2] = 0;
+        values[3] = 0;
+        values[4] = 0;
+        values[5] = 0;
+    }
+
+    public void FadeBattle()
+    {
+        Debug.Log("BATTLE");
+        isSplash = false;
+        fadeVal = 0;
+
+        values[0] = 0;
+        values[1] = 0;
+        values[2] = 0;
+        int maxWins = 0;
+        foreach (PlayerControls pc in gc.GetJoinedPlayers())
         {
-            if (gc.IsGameStarted)
-            {
-                if(isSelectionPlaying)
-                    fadeVal = 0;
-
-                isSelectionPlaying = false;
-                values[0] = 0;
-                values[1] = 0;
-                values[2] = 0;
-                
-                if (UnityEngine.Random.value > 0.5f)
-                {
-                    values[3] = 0.5f;
-                    values[4] = 0;
-                    values[5] = 0;
-                }
-                else
-                {
-                    values[3] = 0f;
-                    values[4] = 0.5f;
-                    values[5] = 0;
-                }
-            }
-            else
-            {
-                if (!isSelectionPlaying)
-                    fadeVal = 0;
-
-                isSelectionPlaying = true;
-                values[0] = 0.5f;
-                values[1] = 0;
-                values[2] = 0;
-                values[3] = 0;
-                values[4] = 0;
-                values[5] = 0;
-            }
+            maxWins = pc.GetWins > maxWins ? pc.GetWins : maxWins;
         }
-        wasGameStarted = gc.IsGameStarted;
+        values[3] = maxWins == 0 ? 0.5f : 0;
+        values[4] = maxWins == 1 ? 0.5f : 0;
+        values[5] = maxWins == 2 ? 0.5f : 0;
     }
 
     public void PlaySound(SoundClip clip)
