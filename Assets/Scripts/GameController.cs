@@ -4,9 +4,12 @@ using System.Linq;
 using Rewired;
 using UnityEngine;
 using Debug = System.Diagnostics.Debug;
+using System;
 
 public class GameController : MonoBehaviour
 {
+    public static event Action GameStateChanged;
+
     public Transform SpawnPoint;
     public GameObject PlayerPrefab;
     private List<Rewired.Player> RePlayers = new List<Rewired.Player>();
@@ -42,7 +45,9 @@ public class GameController : MonoBehaviour
 	            {
 	                winner = AlivePlayers().First();
                     _gameOver = true;
-	            }
+                    if (GameStateChanged != null)
+                        GameStateChanged();
+                }
 
                 foreach (var rePlayer in RePlayers)
                 {
@@ -148,6 +153,8 @@ public class GameController : MonoBehaviour
     IEnumerator GameStart()
     {
         _gameIsStarting = true;
+        if (GameStateChanged != null)
+            GameStateChanged();
         // TODO  move players to center
         yield return StartCoroutine(CenterPlayers());
 
@@ -158,7 +165,10 @@ public class GameController : MonoBehaviour
 
         // Explode spawn
         Explode();
+        
         _gameStarted = true;
+        if (GameStateChanged != null)
+            GameStateChanged();
     }
 
     IEnumerator ResetGame(PlayerControls winner)
@@ -173,7 +183,8 @@ public class GameController : MonoBehaviour
         _gameStarted = false;
         _gameIsStarting = false;
         _gameOver = false;
-
+        if (GameStateChanged != null)
+            GameStateChanged();
         yield return null;
     }
 
