@@ -227,6 +227,7 @@ public class PlayerControls : MonoBehaviour
             state = MoveState.jumping;
             lastJumpTimestamp = Time.time;
             StartCoroutine(SpawnDust(0.05f, transform.position));
+            SoundManager.Instance.PlaySound(SoundManager.Instance.acJump);
         }
     }
 
@@ -258,6 +259,7 @@ public class PlayerControls : MonoBehaviour
                 state = MoveState.prepareStomp;
                 StartCoroutine(StompAfterDelay());
             }
+            SoundManager.Instance.PlaySound(SoundManager.Instance.acStompBegin);
         }
     }
 
@@ -309,6 +311,7 @@ public class PlayerControls : MonoBehaviour
             OnStomp(position, PlayerId, MyRenderer.material.color, currentStompForce / stompForce.y);
         }
         psystem.Emit(20);
+        SoundManager.Instance.PlaySound(SoundManager.Instance.acStomp);
     }
 
     void PerformStompHit(Vector3 dir, float force)
@@ -318,6 +321,7 @@ public class PlayerControls : MonoBehaviour
         isGrounded = false;
         state = MoveState.hit;
         lastJumpTimestamp = Time.time;
+        SoundManager.Instance.PlaySound(SoundManager.Instance.acHit);
     }
 }
 
