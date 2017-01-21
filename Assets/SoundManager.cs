@@ -9,14 +9,14 @@ public class SoundManager : MonoBehaviour
     public GameController gc;
     public static SoundManager Instance { get { return _instance; } }
     public AudioSource sourceSingleSounds;
-    public AudioClip acJump, acStomp, acStompBegin, acHit, acSelect, acHardHit, acHatOff, acSpawn, acLand, acExplode;
+    //public AudioClip acJump, acStomp, acStompBegin, acHit, acSelect, acHardHit, acHatOff, acSpawn, acLand, acExplode;
     public SoundClip scJump, scStomp, scStompBegin, scHit, scSelect, scHardHit, scHatOff, scSpawn, scLand, scExplode;
     [Header("Audio for hats")]
     public AudioClip[] hatSounds;
     public SoundClip[] hatSoundClips;
 
-    public AudioSource source1, source2, source3;
-    float[] values = new float[] { 1, 0, 0 };
+    public AudioSource[] sources;
+    float[] values = new float[] { 1, 0, 0, 0, 0, 0 };
     float fadeVal = 1;
     bool isSelectionPlaying = true, wasGameStarted = false;
 
@@ -33,9 +33,10 @@ public class SoundManager : MonoBehaviour
 
     private void Update()
     {
-        source1.volume = source1.volume * (1f - fadeVal) + values[0] * fadeVal;
-        source2.volume = source2.volume * (1f - fadeVal) + values[1] * fadeVal;
-        source3.volume = source3.volume * (1f - fadeVal) + values[2] * fadeVal;
+        for(int i = 0; i < sources.Length; i++)
+        {
+            sources[i].volume = sources[i].volume * (1f - fadeVal) + values[i] * fadeVal;
+        }
         fadeVal += Time.deltaTime * 0.35f;
         fadeVal = Mathf.Clamp(fadeVal, 0, 1);
     }
@@ -51,15 +52,20 @@ public class SoundManager : MonoBehaviour
 
                 isSelectionPlaying = false;
                 values[0] = 0;
-                if(UnityEngine.Random.value > 0.5f)
+                values[1] = 0;
+                values[2] = 0;
+                
+                if (UnityEngine.Random.value > 0.5f)
                 {
-                    values[1] = 0.5f;
-                    values[2] = 0;
+                    values[3] = 0.5f;
+                    values[4] = 0;
+                    values[5] = 0;
                 }
                 else
                 {
-                    values[1] = 0f;
-                    values[2] = 0.5f;
+                    values[3] = 0f;
+                    values[4] = 0.5f;
+                    values[5] = 0;
                 }
             }
             else
@@ -71,19 +77,22 @@ public class SoundManager : MonoBehaviour
                 values[0] = 0.5f;
                 values[1] = 0;
                 values[2] = 0;
+                values[3] = 0;
+                values[4] = 0;
+                values[5] = 0;
             }
         }
         wasGameStarted = gc.IsGameStarted;
     }
 
-    public void PlaySound(AudioClip clip)
+    public void PlaySound(SoundClip clip)
     {
-        sourceSingleSounds.PlayOneShot(clip, 1);
+        sourceSingleSounds.PlayOneShot(clip.clip, clip.volume);
     }
 
     public void PlayHatSound(int hatid)
     {
-        PlaySound(hatSounds[hatid % hatSounds.Length]);
+        PlaySound(hatSoundClips[hatid % hatSounds.Length]);
     }
 
     [System.Serializable]

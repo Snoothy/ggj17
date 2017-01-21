@@ -83,7 +83,7 @@ public class GameController : MonoBehaviour
                 if (rePlayer.GetButtonDown("Jump") && !ActivePlayers.ContainsKey(rePlayer.id))
                 {
                     var player = CreatePlayer(rePlayer.id);
-                    SoundManager.Instance.PlaySound(SoundManager.Instance.acSelect);
+                    SoundManager.Instance.PlaySound(SoundManager.Instance.scSelect);
                 }
 
                 // Show who you are
@@ -143,7 +143,7 @@ public class GameController : MonoBehaviour
         var controls = prefab.GetComponent<PlayerControls>();
         controls.Setup(id, (PlayerColor)id, this);
         ActivePlayers.Add(id, controls);
-
+        //SoundManager.Instance.PlaySound(SoundManager.Instance.scSpawn);
         // Set position
         var i = 0;
         foreach (var player in ActivePlayers)
@@ -219,7 +219,7 @@ public class GameController : MonoBehaviour
                 player.Value.Reset();
                 player.Value.DisablePlayer();
                 SetPlayerPosition(player.Value.gameObject, i);
-                SoundManager.Instance.PlaySound(SoundManager.Instance.acSelect);
+                SoundManager.Instance.PlaySound(SoundManager.Instance.scSelect);
                 i++;
                 yield return new WaitForSeconds(0.5f);
             }
@@ -248,6 +248,8 @@ public class GameController : MonoBehaviour
             rb.AddForce(new Vector3(Mathf.Cos(rads * i), 0.5f, Mathf.Sin(rads * i)) * force, ForceMode.Impulse);
             i++;
         }
+
+        //SoundManager.Instance.PlaySound(SoundManager.Instance.scSpawn);
     }
 
     IEnumerator CenterPlayers()
