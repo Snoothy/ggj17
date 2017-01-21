@@ -3,30 +3,29 @@ using System.Collections.Generic;
 using System.Linq;
 using Rewired;
 using UnityEngine;
-using Debug = System.Diagnostics.Debug;
 using System;
+using Random = UnityEngine.Random;
 
 public class GameController : MonoBehaviour
 {
-    public static event Action GameStateChanged;
-
     public Transform SpawnPoint;
     public GameObject PlayerPrefab;
     private List<Rewired.Player> RePlayers = new List<Rewired.Player>();
     private Dictionary<int, PlayerControls> ActivePlayers = new Dictionary<int, PlayerControls>();
 
     private bool _gameStarted = false;
+    public bool IsGameStarted { get { return _gameStarted; } }
     private bool _gameIsStarting = false;
     private bool _gameOver = false;
+    private bool _gameEnded = false;
 
-    public bool IsGameStarted { get { return _gameStarted; } }
-    public bool IsGameStarting { get { return _gameIsStarting; } }
-    public bool IsGameOver { get { return _gameOver; } }
+    private Coroutine WinnerRoutine;
 
 	// Use this for initialization
 	void Start () {
 	    	
 	}
+
 
     void Awake()
     {
@@ -35,44 +34,43 @@ public class GameController : MonoBehaviour
             RePlayers.Add(player);
         }
     }
-	
-	// Update is called once per frame
-	void Update () {
-	    if (_gameStarted || _gameIsStarting)
-	    {
+
+    // Update is called once per frame
+    void Update()
+    {
+        if (_gameStarted || _gameIsStarting || _gameEnded)
+        {
             // Someone won
-	        if (AlivePlayers().Count <= 1)
-	        {
-	            PlayerControls winner = null;
+            if (AlivePlayers().Count <= 1)
+            {
+                PlayerControls winner = null;
 
-	            if (!_gameOver)
-	            {
-	                winner = AlivePlayers().First();
-                    _gameOver = true;
-                    if (GameStateChanged != null)
-                        GameStateChanged();
-                }
-
-                foreach (var rePlayer in RePlayers)
+                if (!_gameOver)
                 {
-                    if (rePlayer.GetButtonDown("Start") && ActivePlayers.ContainsKey(rePlayer.id) &&
-                        ActivePlayers.Count > 1)
-                    {
-                        StartCoroutine(ResetGame(winner));
-                    }
+                    winner = AlivePlayers().First();
+                    winner.Win();
+                    winner.DisablePlayer();
+                    _gameOver = true;
+                    if (winner.GetWins >= 3)
+                        _gameEnded = true;
+                    else
+                        SoundManager.Instance.FadeSplash();
+
+                    WinnerRoutine = StartCoroutine(MoveWinner(winner.gameObject));
                 }
             }
-	    }
-	    else
-	    {
-	        // Player selection
-	        foreach (var rePlayer in RePlayers)
-	        {
+        }
+        else
+        {
+            // Player selection
+            foreach (var rePlayer in RePlayers)
+            {
                 // Join game
-	            if (rePlayer.GetButtonDown("Jump") && !ActivePlayers.ContainsKey(rePlayer.id))
-	            {
-	                var player = CreatePlayer(rePlayer.id);
-	            }
+                if (rePlayer.GetButtonDown("Jump") && !ActivePlayers.ContainsKey(rePlayer.id))
+                {
+                    var player = CreatePlayer(rePlayer.id);
+                    SoundManager.Instance.PlaySound(SoundManager.Instance.scSelect);
+                }
 
                 // Show who you are
                 if (rePlayer.GetButtonDown("Jump") && ActivePlayers.ContainsKey(rePlayer.id))
@@ -83,40 +81,39 @@ public class GameController : MonoBehaviour
                 // Leave
                 if (rePlayer.GetButtonDown("Leave") && ActivePlayers.ContainsKey(rePlayer.id))
                 {
-                    UnityEngine.Debug.Log("Leeave");
                     Destroy(ActivePlayers[rePlayer.id].gameObject);
                     ActivePlayers.Remove(rePlayer.id);
 
                     // Update positions
+                    var i = 0;
                     foreach (var player in ActivePlayers)
                     {
-                        SetPlayerPosition(player.Value.gameObject, player.Value.PlayerId);
+                        SetPlayerPosition(player.Value.gameObject, i);
+                        i++;
                     }
                 }
 
                 // Changes hats
                 if (rePlayer.GetNegativeButtonDown("Left") && ActivePlayers.ContainsKey(rePlayer.id))
-	            {
+                {
                     ActivePlayers[rePlayer.id].PrevHat();
-                    UnityEngine.Debug.Log("Hat prev");
-	            }
+                }
 
-	            if (rePlayer.GetButtonDown("Right") && ActivePlayers.ContainsKey(rePlayer.id))
-	            {
+                if (rePlayer.GetButtonDown("Right") && ActivePlayers.ContainsKey(rePlayer.id))
+                {
                     ActivePlayers[rePlayer.id].NextHat();
-                    UnityEngine.Debug.Log("Hat next");
                 }
 
                 // Start game with more than 1 player
-	            if (rePlayer.GetButtonDown("Start") && ActivePlayers.ContainsKey(rePlayer.id) && ActivePlayers.Count > 1)
-	            {
-	                // TODO check if players ready
-	                StartCoroutine(GameStart());
-	            }
-	        }
-	    }
+                if (rePlayer.GetButtonDown("Start") && ActivePlayers.ContainsKey(rePlayer.id) && ActivePlayers.Count > 1)
+                {
+                    // TODO check if players ready
+                    StartCoroutine(GameStart());
+                }
+            }
+        }
 
-	}
+    }
 
     private List<PlayerControls> AlivePlayers()
     {
@@ -130,7 +127,7 @@ public class GameController : MonoBehaviour
         var controls = prefab.GetComponent<PlayerControls>();
         controls.Setup(id, (PlayerColor)id, this);
         ActivePlayers.Add(id, controls);
-
+        //SoundManager.Instance.PlaySound(SoundManager.Instance.scSpawn);
         // Set position
         var i = 0;
         foreach (var player in ActivePlayers)
@@ -151,11 +148,11 @@ public class GameController : MonoBehaviour
     private void SetPlayerPosition(GameObject t, int index)
     {
         var offsetRatio = 2.5;
-        var offset = index * offsetRatio - offsetRatio * ActivePlayers.Count/2.0f + offsetRatio/2.0f;
+        var offset = index * offsetRatio - offsetRatio * ActivePlayers.Count / 2.0f + offsetRatio / 2.0f;
         var prefabTransform = SpawnPoint.GetComponent<Transform>();
         t.GetComponent<Transform>().position = new Vector3(
             prefabTransform.position.x + (float)offset,
-            prefabTransform.position.y-2,
+            prefabTransform.position.y - 2,
             prefabTransform.position.z
             );
     }
@@ -163,8 +160,8 @@ public class GameController : MonoBehaviour
     IEnumerator GameStart()
     {
         _gameIsStarting = true;
-        if (GameStateChanged != null)
-            GameStateChanged();
+        SoundManager.Instance.FadeBattle();
+        // Moves players to center
         // TODO  move players to center
         yield return StartCoroutine(CenterPlayers());
 
@@ -175,32 +172,52 @@ public class GameController : MonoBehaviour
 
         // Explode spawn
         Explode();
-        
+
         _gameStarted = true;
-        if (GameStateChanged != null)
-            GameStateChanged();
     }
 
     IEnumerator ResetGame(PlayerControls winner)
     {
-        foreach (var player in ActivePlayers)
+        // Clean up if game ended
+        if (_gameEnded)
         {
-            player.Value.Reset();
-            player.Value.DisablePlayer();
-            SetPlayerPosition(player.Value.gameObject, player.Value.PlayerId);
+            if (ActivePlayers.Count > 0)
+            {
+                foreach (var player in ActivePlayers)
+                {
+                    Destroy(ActivePlayers[player.Value.PlayerId].gameObject);
+                }
+                ActivePlayers = new Dictionary<int, PlayerControls>();
+            }
+
+            _gameEnded = false;
+            _gameStarted = false;
+        }
+        else
+        {
+            var i = 0;
+            foreach (var player in ActivePlayers)
+            {
+                player.Value.Reset();
+                player.Value.DisablePlayer();
+                SetPlayerPosition(player.Value.gameObject, i);
+                SoundManager.Instance.PlaySound(SoundManager.Instance.scSelect);
+                i++;
+                yield return new WaitForSeconds(0.5f);
+            }
+
+            // Next round
+            StartCoroutine(GameStart());
         }
 
-        _gameStarted = false;
         _gameIsStarting = false;
         _gameOver = false;
-        if (GameStateChanged != null)
-            GameStateChanged();
         yield return null;
     }
 
     private void Explode()
     {
-        var rads = Mathf.Deg2Rad * (360.0f / ActivePlayers.Count);
+        var rads = Mathf.Deg2Rad * (((360.0f / ActivePlayers.Count) + Random.Range(0.0f, 360.0f) ) % 360.0f);
         var force = 10.0f;
         int i = 0;
         foreach (var player in ActivePlayers)
@@ -209,6 +226,8 @@ public class GameController : MonoBehaviour
             rb.AddForce(new Vector3(Mathf.Cos(rads * i), 0.5f, Mathf.Sin(rads * i)) * force, ForceMode.Impulse);
             i++;
         }
+
+        //SoundManager.Instance.PlaySound(SoundManager.Instance.scSpawn);
     }
 
     IEnumerator CenterPlayers()
@@ -231,14 +250,41 @@ public class GameController : MonoBehaviour
             var i = 0;
             foreach (var player in ActivePlayers)
             {
-                player.Value.gameObject.GetComponent<Transform>().position = 
-                    Vector3.Slerp(startLocations[i], 
-                    SpawnPoint.position, 
+                player.Value.gameObject.GetComponent<Transform>().position =
+                    Vector3.Slerp(startLocations[i],
+                    SpawnPoint.position,
                     fracComplete);
                 i++;
             }
             yield return null;
         }
+        yield return null;
+    }
+
+    IEnumerator MoveWinner(GameObject winner)
+    {
+        var startLocation = winner.transform.position;
+        var transforms = winner.transform;
+        var startTime = Time.time;
+        var duration = 2.0f;
+        var endTime = startTime + duration;
+
+        while (Time.time < endTime)
+        {
+            float fracComplete = (Time.time - startTime) / duration;
+
+            transforms.position =
+                Vector3.Slerp(startLocation,
+                SpawnPoint.position+Vector3.up*1.0f,
+                fracComplete);
+
+            yield return null;
+        }
+
+        // TODO confetti and sounds
+        yield return new WaitForSeconds(3.0f);
+        StartCoroutine(ResetGame(winner.GetComponent<PlayerControls>()));
+
         yield return null;
     }
 

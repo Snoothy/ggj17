@@ -16,6 +16,8 @@ public class PlayerControls : MonoBehaviour
 
     private MoveState _stateInner = MoveState.none;
     private GameController GameController;
+    private int Wins = 0;
+    public int GetWins { get { return Wins; } }
 
     public MoveState state
     {
@@ -123,6 +125,8 @@ public class PlayerControls : MonoBehaviour
         hatGo.transform.localPosition = new Vector3(0.0f, 2.5f, -0.01f);
         Hats = hatGo.GetComponent<Hat>();
         Hats.SetHat(playerid + 1);
+
+        ResetWins();
     }
 
     public void Reset()
@@ -130,14 +134,17 @@ public class PlayerControls : MonoBehaviour
         IsAlive = true;
         rbody.velocity = Vector3.zero;
         state = MoveState.hit;
+
+        var playerSprite = gameObject.transform.FindChild("PlayerSprite");
+        playerSprite.FindChild("winnerflare").GetComponent<SpriteRenderer>().enabled = false;
     }
 
     public void Die()
     {
-        if(IsAlive)
+        if (IsAlive)
         {
             IsAlive = false;
-            SoundManager.Instance.PlaySound(SoundManager.Instance.acExplode);
+            SoundManager.Instance.PlaySound(SoundManager.Instance.scExplode);
         }
     }
 
@@ -162,6 +169,35 @@ public class PlayerControls : MonoBehaviour
             case PlayerColor.teal: MyRenderer.material.color = new Color(2, 250, 255); break;
             case PlayerColor.yellow: MyRenderer.material.color = Color.yellow; break;
         }
+    }
+
+    public void Win()
+    {
+        Wins++;
+        var playerSprite = gameObject.transform.FindChild("PlayerSprite");
+        playerSprite.FindChild("winnerflare").GetComponent<SpriteRenderer>().enabled = true;
+        switch (Wins)
+        {
+            case 1:
+                playerSprite.FindChild("trophy1").GetComponent<SpriteRenderer>().enabled = true;
+                break;
+            case 2:
+                playerSprite.FindChild("trophy2").GetComponent<SpriteRenderer>().enabled = true;
+                break;
+            case 3:
+                playerSprite.FindChild("crown").GetComponent<SpriteRenderer>().enabled = true;
+                break;
+        }
+    }
+
+    public void ResetWins()
+    {
+        Wins = 0;
+        var playerSprite = gameObject.transform.FindChild("PlayerSprite");
+        playerSprite.FindChild("trophy1").GetComponent<SpriteRenderer>().enabled = false;
+        playerSprite.FindChild("trophy2").GetComponent<SpriteRenderer>().enabled = false;
+        playerSprite.FindChild("crown").GetComponent<SpriteRenderer>().enabled = false;
+        playerSprite.FindChild("winnerflare").GetComponent<SpriteRenderer>().enabled = false;
     }
 
     public void EnablePlayer()
@@ -285,7 +321,7 @@ public class PlayerControls : MonoBehaviour
         if (other.tag == "Stomp")
         {
             Stomp stomper = other.transform.parent.GetComponent<Stomp>();
-            if(stomper != null && stomper.color != color && IsHittable)
+            if (stomper != null && stomper.color != color && IsHittable)
             {
                 PerformStompHit((transform.position - other.transform.position).normalized + Vector3.up * 0.3f, stomper.force);
             }
@@ -316,7 +352,7 @@ public class PlayerControls : MonoBehaviour
             state = MoveState.jumping;
             lastJumpTimestamp = Time.time;
             StartCoroutine(SpawnDust(0.05f, transform.position));
-            SoundManager.Instance.PlaySound(SoundManager.Instance.acJump);
+            SoundManager.Instance.PlaySound(SoundManager.Instance.scJump);
         }
     }
 
@@ -359,7 +395,7 @@ public class PlayerControls : MonoBehaviour
             currentStompForce = (range / maxStompRange) * stompForce.y;
             state = MoveState.prepareStomp;
             StartCoroutine(StompAfterDelay());
-            SoundManager.Instance.PlaySound(SoundManager.Instance.acStompBegin);
+            SoundManager.Instance.PlaySound(SoundManager.Instance.scStompBegin);
         }
     }
 
@@ -395,7 +431,7 @@ public class PlayerControls : MonoBehaviour
                 rbody.velocity = tempInputV;
             }
             tempInputV = rbody.velocity;
-            if(Mathf.Abs(tempInputV.y) > maxspeed_vertical)
+            if (Mathf.Abs(tempInputV.y) > maxspeed_vertical)
             {
                 tempInputV.y = tempInputV.y > 0 ? maxspeed_vertical : -maxspeed_vertical;
                 rbody.velocity = tempInputV;
@@ -425,7 +461,7 @@ public class PlayerControls : MonoBehaviour
             OnStomp(position, PlayerId, MyRenderer.material.color, currentStompForce / stompForce.y);
         }
         psystem.Emit(20);
-        SoundManager.Instance.PlaySound(SoundManager.Instance.acStomp);
+        SoundManager.Instance.PlaySound(SoundManager.Instance.scStomp);
     }
 
     void PerformStompHit(Vector3 dir, float force)
@@ -435,9 +471,9 @@ public class PlayerControls : MonoBehaviour
         isGrounded = false;
         state = MoveState.hit;
         lastJumpTimestamp = Time.time;
-        SoundManager.Instance.PlaySound(SoundManager.Instance.acHit);
-		if(rbody.velocity.magnitude > 8)
-            SoundManager.Instance.PlaySound(SoundManager.Instance.acHardHit);
+        SoundManager.Instance.PlaySound(SoundManager.Instance.scHit);
+        if (rbody.velocity.magnitude > 8)
+            SoundManager.Instance.PlaySound(SoundManager.Instance.scHardHit);
     }
 }
 

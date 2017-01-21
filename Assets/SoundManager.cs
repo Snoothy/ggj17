@@ -9,71 +9,87 @@ public class SoundManager : MonoBehaviour
     public GameController gc;
     public static SoundManager Instance { get { return _instance; } }
     public AudioSource sourceSingleSounds;
-    public AudioClip acJump, acStomp, acStompBegin, acHit, acSelect, acHardHit, acHatOff, acSpawn, acLand, acExplode;
+    //public AudioClip acJump, acStomp, acStompBegin, acHit, acSelect, acHardHit, acHatOff, acSpawn, acLand, acExplode;
+    public SoundClip scJump, scStomp, scStompBegin, scHit, scSelect, scHardHit, scHatOff, scSpawn, scLand, scExplode;
+    [Header("Audio for hats")]
+    public AudioClip[] hatSounds;
+    public SoundClip[] hatSoundClips;
 
-    public AudioSource source1, source2, source3;
-    float[] values = new float[] { 1, 0, 0 };
+    public AudioSource[] sources;
+    public float FadeSecondsSplash = 4.5f;
+    public float FadeSecondsBattle = 6f;
+    float[] values = new float[] { 1, 0, 0, 0, 0, 0 };
     float fadeVal = 1;
-    bool isSelectionPlaying = true, wasGameStarted = false;
+    bool isSplash = false;
 
     private void Awake()
     {
         _instance = this;
-        Fade();
+        FadeSplash();
     }
 
     private void Start()
     {
-        GameController.GameStateChanged += Fade;
+
     }
 
     private void Update()
     {
-        source1.volume = source1.volume * (1f - fadeVal) + values[0] * fadeVal;
-        source2.volume = source2.volume * (1f - fadeVal) + values[1] * fadeVal;
-        source3.volume = source3.volume * (1f - fadeVal) + values[2] * fadeVal;
-        fadeVal += Time.deltaTime * 0.35f;
+        for(int i = 0; i < sources.Length; i++)
+        {
+            sources[i].volume = sources[i].volume * (1f - fadeVal) + values[i] * fadeVal;
+        }
+        fadeVal += Time.deltaTime / (isSplash ? FadeSecondsSplash : FadeSecondsBattle);
         fadeVal = Mathf.Clamp(fadeVal, 0, 1);
     }
 
-    void Fade()
+    public void FadeSplash()
     {
-        if(gc.IsGameStarted != wasGameStarted)
-        {
-            if (gc.IsGameStarted)
-            {
-                if(isSelectionPlaying)
-                    fadeVal = 0;
+        Debug.Log("SPLASH");
+        isSplash = true;
+        fadeVal = 0;
 
-                isSelectionPlaying = false;
-                values[0] = 0;
-                if(UnityEngine.Random.value > 0.5f)
-                {
-                    values[1] = 0.5f;
-                    values[2] = 0;
-                }
-                else
-                {
-                    values[1] = 0f;
-                    values[2] = 0.5f;
-                }
-            }
-            else
-            {
-                if (!isSelectionPlaying)
-                    fadeVal = 0;
-
-                isSelectionPlaying = true;
-                values[0] = 0.5f;
-                values[1] = 0;
-                values[2] = 0;
-            }
-        }
-        wasGameStarted = gc.IsGameStarted;
+        values[0] = 0;
+        values[1] = 0.5f;
+        values[2] = 0;
+        values[3] = 0;
+        values[4] = 0;
+        values[5] = 0;
     }
 
-    public void PlaySound(AudioClip clip)
+    public void FadeBattle()
     {
-        sourceSingleSounds.PlayOneShot(clip, 1);
+        Debug.Log("BATTLE");
+        isSplash = false;
+        fadeVal = 0;
+
+        values[0] = 0;
+        values[1] = 0;
+        values[2] = 0;
+        int maxWins = 0;
+        foreach (PlayerControls pc in gc.GetJoinedPlayers())
+        {
+            maxWins = pc.GetWins > maxWins ? pc.GetWins : maxWins;
+        }
+        values[3] = maxWins == 0 ? 0.5f : 0;
+        values[4] = maxWins == 1 ? 0.5f : 0;
+        values[5] = maxWins == 2 ? 0.5f : 0;
+    }
+
+    public void PlaySound(SoundClip clip)
+    {
+        sourceSingleSounds.PlayOneShot(clip.clip, clip.volume);
+    }
+
+    public void PlayHatSound(int hatid)
+    {
+        PlaySound(hatSoundClips[hatid % hatSounds.Length]);
+    }
+
+    [System.Serializable]
+    public class SoundClip
+    {
+        public AudioClip clip;
+        public float volume;
     }
 }
