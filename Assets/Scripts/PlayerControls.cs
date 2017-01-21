@@ -115,7 +115,7 @@ public class PlayerControls : MonoBehaviour
         PlayerId = playerid;
         SetColor(mycolor);
 
-        // Hats
+        // Hats 
         var hatRes = Resources.Load("prefabs/Hat");
         var hatGo = (GameObject)Instantiate(hatRes);
         var playerSprite = gameObject.transform.FindChild("PlayerSprite");
