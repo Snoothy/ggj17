@@ -106,12 +106,29 @@ public class PlayerControls : MonoBehaviour
 
     public Animator anim;
 
+    public bool IsAlive = true;
+
     public void Setup(int playerid, PlayerColor mycolor, GameController gameController)
     {
         DisablePlayer();
         GameController = gameController;
         PlayerId = playerid;
         SetColor(mycolor);
+    }
+
+    public void Reset()
+    {
+        IsAlive = true;
+        rbody.velocity = Vector3.zero;
+    }
+
+    public void Die()
+    {
+        if(!IsAlive)
+        {
+            IsAlive = false;
+            //SoundManager.Instance.PlaySound(SoundManager.Instance.ac)
+        }
     }
 
     static int TEMPVAR = 1;
@@ -383,6 +400,8 @@ public class PlayerControls : MonoBehaviour
         state = MoveState.hit;
         lastJumpTimestamp = Time.time;
         SoundManager.Instance.PlaySound(SoundManager.Instance.acHit);
+        if(rbody.velocity.magnitude > 8)
+            SoundManager.Instance.PlaySound(SoundManager.Instance.acHardHit);
     }
 }
 
