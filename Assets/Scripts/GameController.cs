@@ -42,7 +42,7 @@ public class GameController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (_gameStarted || _gameIsStarting)
+        if (_gameStarted || _gameIsStarting || _gameEnded)
         {
             // Someone won
             if (AlivePlayers().Count <= 1)
@@ -55,23 +55,12 @@ public class GameController : MonoBehaviour
                     winner.Win();
                     winner.DisablePlayer();
                     _gameOver = true;
-                    WinnerRoutine = StartCoroutine(MoveWinner(winner.gameObject));
-
                     if (winner.GetWins >= 3) _gameEnded = true;
+                    WinnerRoutine = StartCoroutine(MoveWinner(winner.gameObject));
 
                     if (GameStateChanged != null)
                         GameStateChanged();
                 }
-
-
-                //foreach (var rePlayer in RePlayers)
-                //{
-                //    if (rePlayer.GetButtonDown("Start") && ActivePlayers.ContainsKey(rePlayer.id) &&
-                //        ActivePlayers.Count > 1)
-                //    {
-                //        StartCoroutine(ResetGame(winner));
-                //    }
-                //}
             }
         }
         else
@@ -111,13 +100,11 @@ public class GameController : MonoBehaviour
                 if (rePlayer.GetNegativeButtonDown("Left") && ActivePlayers.ContainsKey(rePlayer.id))
                 {
                     ActivePlayers[rePlayer.id].PrevHat();
-                    UnityEngine.Debug.Log("Hat prev");
                 }
 
                 if (rePlayer.GetButtonDown("Right") && ActivePlayers.ContainsKey(rePlayer.id))
                 {
                     ActivePlayers[rePlayer.id].NextHat();
-                    UnityEngine.Debug.Log("Hat next");
                 }
 
                 // Start game with more than 1 player
@@ -203,13 +190,17 @@ public class GameController : MonoBehaviour
         // Clean up if game ended
         if (_gameEnded)
         {
-            _gameEnded = false;
-
-            foreach (var player in ActivePlayers)
+            if (ActivePlayers.Count > 0)
             {
-                Destroy(ActivePlayers[player.Value.PlayerId].gameObject);
-                ActivePlayers.Remove(player.Value.PlayerId);
+                foreach (var player in ActivePlayers)
+                {
+                    Destroy(ActivePlayers[player.Value.PlayerId].gameObject);
+                }
+                ActivePlayers = new Dictionary<int, PlayerControls>();
             }
+
+            _gameStarted = false;
+            _gameEnded = false;
         }
         else
         {
@@ -228,7 +219,6 @@ public class GameController : MonoBehaviour
             StartCoroutine(GameStart());
         }
         
-        _gameStarted = false;
         _gameIsStarting = false;
         _gameOver = false;
 
