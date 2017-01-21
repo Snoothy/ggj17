@@ -12,7 +12,7 @@ public class PlayerControls : MonoBehaviour
     public Rigidbody rbody;
     public Vector3 jumpForce, stompForce;
     public float movespeed = 3;
-    public float maxspeed = 3;
+    public float maxspeed = 3, maxspeed_vertical = 50;
 
     private MoveState _stateInner = MoveState.none;
     private GameController GameController;
@@ -252,6 +252,18 @@ public class PlayerControls : MonoBehaviour
             isGrounded = true;
             lastGroundedTime = Time.time;
         }
+        else if (collision.collider.tag == "Bumper")
+        {
+            Bumper bump = collision.transform.GetComponent<Bumper>();
+            if (bump != null)
+            {
+                bump.DoBump();
+                Vector3 val = (transform.position - collision.contacts[0].point).normalized + Vector3.up * 0.3f + new Vector3(0, -rbody.velocity.y / 10, 0);
+                rbody.velocity = Vector3.zero;
+                rbody.AddForce(val * bump.force, ForceMode.VelocityChange);
+                state = MoveState.hit;
+            }
+        }
     }
 
     private void OnCollisionStay(Collision collision)
@@ -269,7 +281,6 @@ public class PlayerControls : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        Debug.Log("OnTriggerEnter: " + other.tag);
         if (other.tag == "Stomp")
         {
             Stomp stomper = other.transform.parent.GetComponent<Stomp>();
@@ -280,13 +291,7 @@ public class PlayerControls : MonoBehaviour
         }
         else if (other.tag == "KillZone")
         {
-            Debug.Log("OnTriggerEnter: " + other.tag + " DIE DIE DIE!");
             Die();
-        }
-        else if(other.tag == "Bumper")
-        {
-            Bumper bump = other.transform.GetComponent<Bumper>();
-            Debug.Log("BOOBIES!");
         }
     }
 
@@ -344,14 +349,15 @@ public class PlayerControls : MonoBehaviour
         if (!isGrounded && state == MoveState.jumping)// && state == MoveState.chargingStomp)
         {
             RaycastHit info;
+            float range = maxStompRange;
             if (Physics.Raycast(transform.position, Vector3.down, out info, 50, 1 << LayerMask.NameToLayer("Ground")))
             {
-                float range = Mathf.Abs(transform.position.y - info.point.y - 0.5f);
+                range = Mathf.Abs(transform.position.y - info.point.y - 0.5f);
                 //currentStompForce = stompForce.y * Mathf.Clamp(Time.time - lastStompTimestamp, minStompCharge, maxStompCharge);
-                currentStompForce = range / maxStompRange * stompForce.y;
-                state = MoveState.prepareStomp;
-                StartCoroutine(StompAfterDelay());
             }
+            currentStompForce = (range / maxStompRange) * stompForce.y;
+            state = MoveState.prepareStomp;
+            StartCoroutine(StompAfterDelay());
             SoundManager.Instance.PlaySound(SoundManager.Instance.acStompBegin);
         }
     }
@@ -385,6 +391,12 @@ public class PlayerControls : MonoBehaviour
             {
                 tempInputV = tempInputV.normalized * maxspeed;
                 tempInputV.y = rbody.velocity.y;
+                rbody.velocity = tempInputV;
+            }
+            tempInputV = rbody.velocity;
+            if(Mathf.Abs(tempInputV.y) > maxspeed_vertical)
+            {
+                tempInputV.y = tempInputV.y > 0 ? maxspeed_vertical : -maxspeed_vertical;
                 rbody.velocity = tempInputV;
             }
             /*if (!isInTheAir && rbody.velocity.magnitude > maxspeed)
