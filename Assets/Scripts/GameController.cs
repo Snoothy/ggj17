@@ -8,7 +8,7 @@ public class GameController : MonoBehaviour
 {
     public Transform SpawnPoint;
     public GameObject PlayerPrefab;
-    private List<Rewired.Player> RePlayers;
+    private List<Rewired.Player> RePlayers = new List<Rewired.Player>();
     private Dictionary<int, PlayerControls> ActivePlayers = new Dictionary<int, PlayerControls>();
 
     private bool _gameStarted = false;
@@ -20,7 +20,10 @@ public class GameController : MonoBehaviour
 
     void Awake()
     {
-        RePlayers = (List<Player>) ReInput.players.GetPlayers();
+        foreach (var player in ReInput.players.GetPlayers(false))
+        {
+            RePlayers.Add(player);
+        }
     }
 	
 	// Update is called once per frame
@@ -57,6 +60,7 @@ public class GameController : MonoBehaviour
     {
         var prefab = Instantiate(PlayerPrefab, SpawnPoint);
         var controls = prefab.GetComponent<PlayerControls>();
+        controls.Setup(id, (PlayerColor)id);
         ActivePlayers.Add(id, controls);
         return controls;
     }

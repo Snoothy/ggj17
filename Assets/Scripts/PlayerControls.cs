@@ -29,7 +29,6 @@ public class PlayerControls : MonoBehaviour
                 case MoveState.afterStomp: MyFace.sprite = FaceStunned; break;
                 case MoveState.prepareStomp:
                 case MoveState.stomping: MyFace.sprite = FacePound; break;
-                case MoveState.none: MyFace.sprite = FaceNormal; break;
             }
         }
     }
@@ -77,7 +76,7 @@ public class PlayerControls : MonoBehaviour
     public Screenshake screenshaker;
 
     public Color color { get { return MyRenderer.material.color; } }
-    public PlayerColor playercolor = PlayerColor.none;
+    public PlayerColor playercolor = PlayerColor.green;
 
     public void Setup(int playerid, PlayerColor mycolor)
     {
@@ -89,10 +88,6 @@ public class PlayerControls : MonoBehaviour
     private void Start()
     {
         screenshaker = GameObject.FindGameObjectWithTag("MainCamera").GetComponent<Screenshake>();
-        if(playercolor == PlayerColor.none)
-        {
-            SetColor((PlayerColor)(TEMPVAR++));
-        }
         //transform.position += Vector3.right * PlayerId;
     }
 
@@ -128,9 +123,9 @@ public class PlayerControls : MonoBehaviour
 
         //cannot charge or move while we are resolving the hit we received
         if (state == MoveState.hit)
-            return; 
+            return;
 
-        if(state == MoveState.prepareStomp)
+        if (state == MoveState.prepareStomp)
         {
             rbody.velocity = Vector3.zero;
         }
@@ -170,7 +165,7 @@ public class PlayerControls : MonoBehaviour
     {
         if (collision.contacts[0].point.y < transform.position.y && collision.collider.tag == "Ground")
         {
-            if(state == MoveState.stomping)
+            if (state == MoveState.stomping)
             {
                 PerformStomp(collision.contacts[0].point);
                 state = MoveState.afterStomp;
@@ -188,7 +183,7 @@ public class PlayerControls : MonoBehaviour
         if (!isGrounded && collision.contacts[0].point.y < transform.position.y && collision.collider.tag == "Ground" && Time.time - lastJumpTimestamp > 0.25f)
         {
             isGrounded = true;
-            if(state != MoveState.afterStomp)
+            if (state != MoveState.afterStomp)
                 state = MoveState.none;
         }
     }
@@ -238,7 +233,7 @@ public class PlayerControls : MonoBehaviour
         if (!isGrounded)// && state == MoveState.chargingStomp)
         {
             RaycastHit info;
-            if(Physics.Raycast(transform.position, Vector3.down, out info, 50, 1<<LayerMask.NameToLayer("Ground")))
+            if (Physics.Raycast(transform.position, Vector3.down, out info, 50, 1 << LayerMask.NameToLayer("Ground")))
             {
                 float range = Mathf.Abs(transform.position.y - info.point.y - 0.5f);
                 //currentStompForce = stompForce.y * Mathf.Clamp(Time.time - lastStompTimestamp, minStompCharge, maxStompCharge);
@@ -255,7 +250,7 @@ public class PlayerControls : MonoBehaviour
         Transform t = transform;
         Vector3 tpos = t.position;
         Vector3 tposAdd = Vector3.up * 0.25f;
-        while(timer > 0)
+        while (timer > 0)
         {
             timer -= Time.deltaTime;
             t.position = tpos + (1f - timer / stompDelay) * tposAdd;
@@ -269,7 +264,7 @@ public class PlayerControls : MonoBehaviour
     Vector3 tempInputV;
     public void DoInput(float x, float y, bool ischargingjump)
     {
-        if(x != 0 || y != 0)
+        if (x != 0 || y != 0)
         {
             rbody.AddForce(new Vector3(x, 0, y) * movespeed * (isInTheAir ? 0.25f : 1f) * (ischargingjump ? 0.8f : 1f), ForceMode.VelocityChange);
             tempInputV = rbody.velocity;
@@ -294,7 +289,7 @@ public class PlayerControls : MonoBehaviour
         screenshaker.Shake(currentStompForce / stompForce.y);
         if (OnStomp != null)
         {
-            OnStomp(position, PlayerId, MyRenderer.material.color, currentStompForce/stompForce.y);
+            OnStomp(position, PlayerId, MyRenderer.material.color, currentStompForce / stompForce.y);
             Debug.Log("STOMP TIME: " + currentStompForce / stompForce.y);
         }
         psystem.Emit(20);
@@ -310,4 +305,4 @@ public class PlayerControls : MonoBehaviour
 }
 
 public enum MoveState { none, chargingJump, chargingStomp, stomping, jumping, hit, afterStomp, prepareStomp }
-public enum PlayerColor { /*black, white,*/ none, green, red, yellow, blue, orange, magenta, teal, pink }
+public enum PlayerColor { /*black, white,*/ green, red, yellow, blue, orange, magenta, teal, pink }
