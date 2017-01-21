@@ -283,6 +283,10 @@ public class PlayerControls : MonoBehaviour
             Debug.Log("OnTriggerEnter: " + other.tag + " DIE DIE DIE!");
             Die();
         }
+        else if(other.tag == "Bumper")
+        {
+            Bumper bump = other.transform.GetComponent<Bumper>();
+        }
     }
 
     /*public void ChargeJump()
