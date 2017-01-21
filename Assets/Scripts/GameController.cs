@@ -14,6 +14,7 @@ public class GameController : MonoBehaviour
 
     private bool _gameStarted = false;
     private bool _gameIsStarting = false;
+    private bool _gameOver = false;
 
 	// Use this for initialization
 	void Start () {
@@ -32,7 +33,26 @@ public class GameController : MonoBehaviour
 	void Update () {
 	    if (_gameStarted || _gameIsStarting)
 	    {
+            // Someone won
+	        if (AlivePlayers().Count <= 1)
+	        {
+	            PlayerControls winner = null;
 
+	            if (!_gameOver)
+	            {
+	                winner = AlivePlayers().First();
+                    _gameOver = true;
+	            }
+
+                foreach (var rePlayer in RePlayers)
+                {
+                    if (rePlayer.GetButtonDown("Start") && ActivePlayers.ContainsKey(rePlayer.id) &&
+                        ActivePlayers.Count > 1)
+                    {
+                        StartCoroutine(ResetGame(winner));
+                    }
+                }
+            }
 	    }
 	    else
 	    {
@@ -45,8 +65,28 @@ public class GameController : MonoBehaviour
 	                var player = CreatePlayer(rePlayer.id);
 	            }
 
+                // Show who you are
+                if (rePlayer.GetButtonDown("Jump") && ActivePlayers.ContainsKey(rePlayer.id))
+                {
+                    // TODO
+                }
+
+                // Leave
+                if (rePlayer.GetButtonDown("Leave") && ActivePlayers.ContainsKey(rePlayer.id))
+                {
+                    UnityEngine.Debug.Log("Leeave");
+                    Destroy(ActivePlayers[rePlayer.id].gameObject);
+                    ActivePlayers.Remove(rePlayer.id);
+
+                    // Update positions
+                    foreach (var player in ActivePlayers)
+                    {
+                        SetPlayerPosition(player.Value.gameObject, player.Value.PlayerId);
+                    }
+                }
+
                 // Changes hats
-	            if (rePlayer.GetNegativeButtonDown("Left") && ActivePlayers.ContainsKey(rePlayer.id))
+                if (rePlayer.GetNegativeButtonDown("Left") && ActivePlayers.ContainsKey(rePlayer.id))
 	            {
                     ActivePlayers[rePlayer.id].PrevHat();
                     UnityEngine.Debug.Log("Hat prev");
@@ -58,8 +98,8 @@ public class GameController : MonoBehaviour
                     UnityEngine.Debug.Log("Hat next");
                 }
 
-                // Start game 
-	            if (rePlayer.GetButtonDown("Start") && ActivePlayers.ContainsKey(rePlayer.id))
+                // Start game with more than 1 player
+	            if (rePlayer.GetButtonDown("Start") && ActivePlayers.ContainsKey(rePlayer.id) && ActivePlayers.Count > 1)
 	            {
 	                // TODO check if players ready
 	                StartCoroutine(GameStart());
@@ -68,6 +108,12 @@ public class GameController : MonoBehaviour
 	    }
 
 	}
+
+    private List<PlayerControls> AlivePlayers()
+    {
+        var w = ActivePlayers.Where(player => player.Value.IsAlive).ToList();
+        return w.Select(player => player.Value).ToList();
+    }
 
     private PlayerControls CreatePlayer(int id)
     {
@@ -119,6 +165,22 @@ public class GameController : MonoBehaviour
         // Explode spawn
         Explode();
         _gameStarted = true;
+    }
+
+    IEnumerator ResetGame(PlayerControls winner)
+    {
+        foreach (var player in ActivePlayers)
+        {
+            player.Value.Reset();
+            player.Value.DisablePlayer();
+            SetPlayerPosition(player.Value.gameObject, player.Value.PlayerId);
+        }
+
+        _gameStarted = false;
+        _gameIsStarting = false;
+        _gameOver = false;
+
+        yield return null;
     }
 
     private void Explode()
