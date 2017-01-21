@@ -4,6 +4,7 @@ using System.Linq;
 using Rewired;
 using UnityEngine;
 using System;
+using Random = UnityEngine.Random;
 
 public class GameController : MonoBehaviour
 {
@@ -216,7 +217,7 @@ public class GameController : MonoBehaviour
 
     private void Explode()
     {
-        var rads = Mathf.Deg2Rad * (360.0f / ActivePlayers.Count);
+        var rads = Mathf.Deg2Rad * (((360.0f / ActivePlayers.Count) + Random.Range(0.0f, 360.0f) ) % 360.0f);
         var force = 10.0f;
         int i = 0;
         foreach (var player in ActivePlayers)
