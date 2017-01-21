@@ -36,12 +36,12 @@ public class GameController : MonoBehaviour
             // Someone won
 	        if (AlivePlayers().Count <= 1)
 	        {
-	            var winner = AlivePlayers().First();
+	            PlayerControls winner = null;
 
 	            if (!_gameOver)
 	            {
-
-	                _gameOver = true;
+	                winner = AlivePlayers().First();
+                    _gameOver = true;
 	            }
 
                 foreach (var rePlayer in RePlayers)
@@ -71,6 +71,12 @@ public class GameController : MonoBehaviour
                     UnityEngine.Debug.Log("Leeave");
                     Destroy(ActivePlayers[rePlayer.id].gameObject);
                     ActivePlayers.Remove(rePlayer.id);
+
+                    // Update positions
+                    foreach (var player in ActivePlayers)
+                    {
+                        SetPlayerPosition(player.Value.gameObject, player.Value.PlayerId);
+                    }
                 }
 
                 // Changes hats
