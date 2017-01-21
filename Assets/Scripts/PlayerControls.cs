@@ -42,7 +42,7 @@ public class PlayerControls : MonoBehaviour
                     break;
                 case MoveState.prepareStomp:
                 case MoveState.stomping:
-                    MyFace.sprite = FacePound; 
+                    MyFace.sprite = FacePound;
                     anim.SetTrigger("willPound");
                     break;
                 case MoveState.none:
@@ -140,7 +140,7 @@ public class PlayerControls : MonoBehaviour
 
     public void Die()
     {
-        if(IsAlive)
+        if (IsAlive)
         {
             IsAlive = false;
             SoundManager.Instance.PlaySound(SoundManager.Instance.acExplode);
@@ -213,7 +213,7 @@ public class PlayerControls : MonoBehaviour
 
     void Update()
     {
-        if (!GameController.IsGameStarted() || !IsAlive)
+        if (!GameController.IsGameStarted || !IsAlive)
         {
 
             return;
@@ -320,7 +320,7 @@ public class PlayerControls : MonoBehaviour
         if (other.tag == "Stomp")
         {
             Stomp stomper = other.transform.parent.GetComponent<Stomp>();
-            if(stomper != null && stomper.color != color && IsHittable)
+            if (stomper != null && stomper.color != color && IsHittable)
             {
                 PerformStompHit((transform.position - other.transform.position).normalized + Vector3.up * 0.3f, stomper.force);
             }
@@ -430,7 +430,7 @@ public class PlayerControls : MonoBehaviour
                 rbody.velocity = tempInputV;
             }
             tempInputV = rbody.velocity;
-            if(Mathf.Abs(tempInputV.y) > maxspeed_vertical)
+            if (Mathf.Abs(tempInputV.y) > maxspeed_vertical)
             {
                 tempInputV.y = tempInputV.y > 0 ? maxspeed_vertical : -maxspeed_vertical;
                 rbody.velocity = tempInputV;
@@ -471,7 +471,7 @@ public class PlayerControls : MonoBehaviour
         state = MoveState.hit;
         lastJumpTimestamp = Time.time;
         SoundManager.Instance.PlaySound(SoundManager.Instance.acHit);
-		if(rbody.velocity.magnitude > 8)
+        if (rbody.velocity.magnitude > 8)
             SoundManager.Instance.PlaySound(SoundManager.Instance.acHardHit);
     }
 }

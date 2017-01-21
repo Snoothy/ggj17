@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using Rewired;
 using UnityEngine;
-using Debug = System.Diagnostics.Debug;
 using System;
 
 public class GameController : MonoBehaviour
@@ -19,11 +18,15 @@ public class GameController : MonoBehaviour
     private bool _gameIsStarting = false;
     private bool _gameOver = false;
 
-    // Use this for initialization
-    void Start()
-    {
+    public bool IsGameStarted { get { return _gameStarted; } }
+    public bool IsGameStarting { get { return _gameIsStarting; } }
+    public bool IsGameOver { get { return _gameOver; } }
 
-    }
+	// Use this for initialization
+	void Start () {
+	    	
+	}
+
 
     void Awake()
     {
@@ -284,10 +287,4 @@ public class GameController : MonoBehaviour
     {
         return ActivePlayers.Select(player => player.Value).ToList();
     }
-
-    public bool IsGameStarted()
-    {
-        return _gameStarted;
-    }
-
 }
