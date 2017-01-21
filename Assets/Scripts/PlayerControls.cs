@@ -20,7 +20,7 @@ public class PlayerControls : MonoBehaviour
         set
         {
             _stateInner = value;
-            switch(_stateInner)
+            switch (_stateInner)
             {
                 case MoveState.chargingJump:
                 case MoveState.chargingStomp: MyFace.sprite = FaceCharging; break;
@@ -33,7 +33,26 @@ public class PlayerControls : MonoBehaviour
             }
         }
     }
+
+    RaycastHit info_hittable;
+    [Tooltip("Used for calculating if players can be hit by waves before/after grounded")]
+    public float hittableAirDistance = 2.5f;
+    public bool IsHittable
+    {
+        get
+        {
+            if (isGrounded)
+                return true;
+            if (Time.time - lastGroundedTime < hitAfterGrounded)
+                return true;
+            if (Physics.Raycast(transform.position, Vector3.down, out info_hittable, 2.5f, 1 << LayerMask.NameToLayer("Ground")))
+                return true;
+            return false;
+        }
+    }
     public bool isGrounded;
+    float lastGroundedTime = 0;
+    public float hitAfterGrounded = 0.3f;
     public bool isInTheAir { get { return !isGrounded; } }
     private float lastJumpTimestamp = float.MinValue;
     private float lastStompTimestamp = float.MinValue;
@@ -176,9 +195,8 @@ public class PlayerControls : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        //Start herer
         Stomp stomper = other.transform.parent.GetComponent<Stomp>();
-        if (other.tag == "Stomp" && isGrounded && stomper != null && stomper.color != color)
+        if (other.tag == "Stomp" && stomper != null && stomper.color != color && IsHittable)
         {
             PerformStompHit((transform.position - other.transform.position).normalized + Vector3.up * 0.3f, stomper.force);
         }
