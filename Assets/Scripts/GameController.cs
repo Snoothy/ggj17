@@ -1,9 +1,9 @@
-﻿using System;
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using Rewired;
 using UnityEngine;
+using Debug = System.Diagnostics.Debug;
 
 public class GameController : MonoBehaviour
 {
@@ -44,10 +44,21 @@ public class GameController : MonoBehaviour
 	                var player = CreatePlayer(rePlayer.id);
 	            }
 
-                // Changes hats TODO
+                // Changes hats
+	            if (rePlayer.GetNegativeButtonDown("Left") && ActivePlayers.ContainsKey(rePlayer.id))
+	            {
+                    ActivePlayers[rePlayer.id].PrevHat();
+                    UnityEngine.Debug.Log("Hat prev");
+	            }
+
+	            if (rePlayer.GetButtonDown("Right") && ActivePlayers.ContainsKey(rePlayer.id))
+	            {
+                    ActivePlayers[rePlayer.id].NextHat();
+                    UnityEngine.Debug.Log("Hat next");
+                }
 
                 // Start game 
-	            if (rePlayer.GetButtonDown("Start") && ActivePlayers.ContainsKey(rePlayer.id) && !_gameStarted)
+	            if (rePlayer.GetButtonDown("Start") && ActivePlayers.ContainsKey(rePlayer.id))
 	            {
 	                // TODO check if players ready
 	                StartCoroutine(GameStart());
