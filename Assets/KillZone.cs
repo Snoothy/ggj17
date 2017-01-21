@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class KillZone : MonoBehaviour
 {
-    private void OnTriggerEnter(Collider other)
+    /*private void OnTriggerEnter(Collider other)
     {
         if (other.tag == "Player" && other.transform.GetComponent<PlayerControls>() != null)
             other.transform.GetComponent<PlayerControls>().Die();
@@ -14,5 +14,5 @@ public class KillZone : MonoBehaviour
     {
         if (other.tag == "Player" && other.transform.GetComponent<PlayerControls>() != null)
             other.transform.GetComponent<PlayerControls>().Die();
-    }
+    }*/
 }

@@ -7,7 +7,7 @@ public class SoundManager : MonoBehaviour
     static SoundManager _instance;
     public static SoundManager Instance { get { return _instance; } }
     public AudioSource sourceSingleSounds;
-    public AudioClip acJump, acStomp, acStompBegin, acHit, acSelect, acHardHit, acHatOff, acSpawn, acLand;
+    public AudioClip acJump, acStomp, acStompBegin, acHit, acSelect, acHardHit, acHatOff, acSpawn, acLand, acExplode;
 
     private void Awake()
     {

@@ -124,10 +124,10 @@ public class PlayerControls : MonoBehaviour
 
     public void Die()
     {
-        if(!IsAlive)
+        if(IsAlive)
         {
             IsAlive = false;
-            //SoundManager.Instance.PlaySound(SoundManager.Instance.ac)
+            SoundManager.Instance.PlaySound(SoundManager.Instance.acExplode);
         }
     }
 
@@ -168,7 +168,7 @@ public class PlayerControls : MonoBehaviour
 
     void Update()
     {
-        if (!GameController.IsGameStarted())
+        if (!GameController.IsGameStarted() || !IsAlive)
         {
 
             return;
@@ -260,10 +260,19 @@ public class PlayerControls : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        Stomp stomper = other.transform.parent.GetComponent<Stomp>();
-        if (other.tag == "Stomp" && stomper != null && stomper.color != color && IsHittable)
+        Debug.Log("OnTriggerEnter: " + other.tag);
+        if (other.tag == "Stomp")
         {
-            PerformStompHit((transform.position - other.transform.position).normalized + Vector3.up * 0.3f, stomper.force);
+            Stomp stomper = other.transform.parent.GetComponent<Stomp>();
+            if(stomper != null && stomper.color != color && IsHittable)
+            {
+                PerformStompHit((transform.position - other.transform.position).normalized + Vector3.up * 0.3f, stomper.force);
+            }
+        }
+        else if (other.tag == "KillZone")
+        {
+            Debug.Log("OnTriggerEnter: " + other.tag + " DIE DIE DIE!");
+            Die();
         }
     }
 
