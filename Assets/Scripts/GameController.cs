@@ -121,7 +121,15 @@ public class GameController : MonoBehaviour
                         allReady &= player.Value.IsReady;
                     }
                     if (allReady)
+                    {
+                        foreach (var player in ActivePlayers)
+                        {
+                            player.Value.HideReady();
+                        }
                         StartCoroutine(GameStart());
+
+                    }
+                        
                 }
             }
         }
