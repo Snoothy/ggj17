@@ -26,12 +26,32 @@ public class PlayerControls : MonoBehaviour
             switch (_stateInner)
             {
                 case MoveState.chargingJump:
-                case MoveState.chargingStomp: MyFace.sprite = FaceCharging; break;
-                case MoveState.jumping: MyFace.sprite = FaceJump; break;
+                case MoveState.chargingStomp:
+                    MyFace.sprite = FaceCharging;
+                    break;
+                case MoveState.jumping:
+                    MyFace.sprite = FaceJump;
+                    anim.SetTrigger("jump");
+                    anim.ResetTrigger("landed");
+                    break;
                 case MoveState.hit:
-                case MoveState.afterStomp: MyFace.sprite = FaceStunned; break;
+                case MoveState.afterStomp:
+                    MyFace.sprite = FaceStunned;
+                    anim.SetTrigger("stomped");
+                    break;
                 case MoveState.prepareStomp:
-                case MoveState.stomping: MyFace.sprite = FacePound; break;
+                case MoveState.stomping:
+                    MyFace.sprite = FacePound;
+                    anim.SetTrigger("willPound");
+                    break;
+                case MoveState.none:
+                    MyFace.sprite = FaceNormal;
+                    anim.SetTrigger("landed");
+                    //anim.ResetTrigger("landed");
+                    anim.ResetTrigger("willPound");
+                    anim.ResetTrigger("stomped");
+                    anim.ResetTrigger("jump");
+                    break;
             }
         }
     }
@@ -83,6 +103,8 @@ public class PlayerControls : MonoBehaviour
 
     public Color color { get { return MyRenderer.material.color; } }
     public PlayerColor playercolor = PlayerColor.green;
+
+    public Animator anim;
 
     public void Setup(int playerid, PlayerColor mycolor, GameController gameController)
     {
@@ -329,6 +351,14 @@ public class PlayerControls : MonoBehaviour
             {
                 rbody.velocity = rbody.velocity.normalized * maxspeed;
             }*/
+            if(state == MoveState.none)
+                anim.SetBool("isWalking", true);
+            else
+                anim.SetBool("isWalking", false);
+        }
+        else
+        {
+            anim.SetBool("isWalking", false);
         }
     }
 
