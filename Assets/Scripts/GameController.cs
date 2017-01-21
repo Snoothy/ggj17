@@ -1,18 +1,23 @@
-﻿using System;
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using Rewired;
 using UnityEngine;
+using Debug = System.Diagnostics.Debug;
+using System;
 
 public class GameController : MonoBehaviour
 {
+    public static event Action GameStateChanged;
+
     public Transform SpawnPoint;
     public GameObject PlayerPrefab;
     private List<Rewired.Player> RePlayers = new List<Rewired.Player>();
     private Dictionary<int, PlayerControls> ActivePlayers = new Dictionary<int, PlayerControls>();
 
     private bool _gameStarted = false;
+    private bool _gameIsStarting = false;
+    private bool _gameOver = false;
 
 	// Use this for initialization
 	void Start () {
@@ -29,9 +34,30 @@ public class GameController : MonoBehaviour
 	
 	// Update is called once per frame
 	void Update () {
-	    if (_gameStarted)
+	    if (_gameStarted || _gameIsStarting)
 	    {
+            // Someone won
+	        if (AlivePlayers().Count <= 1)
+	        {
+	            PlayerControls winner = null;
 
+	            if (!_gameOver)
+	            {
+	                winner = AlivePlayers().First();
+                    _gameOver = true;
+                    if (GameStateChanged != null)
+                        GameStateChanged();
+                }
+
+                foreach (var rePlayer in RePlayers)
+                {
+                    if (rePlayer.GetButtonDown("Start") && ActivePlayers.ContainsKey(rePlayer.id) &&
+                        ActivePlayers.Count > 1)
+                    {
+                        StartCoroutine(ResetGame(winner));
+                    }
+                }
+            }
 	    }
 	    else
 	    {
@@ -44,10 +70,41 @@ public class GameController : MonoBehaviour
 	                var player = CreatePlayer(rePlayer.id);
 	            }
 
-                // Changes hats TODO
+                // Show who you are
+                if (rePlayer.GetButtonDown("Jump") && ActivePlayers.ContainsKey(rePlayer.id))
+                {
+                    // TODO
+                }
 
-                // Start game 
-	            if (rePlayer.GetButtonDown("Start") && ActivePlayers.ContainsKey(rePlayer.id) && !_gameStarted)
+                // Leave
+                if (rePlayer.GetButtonDown("Leave") && ActivePlayers.ContainsKey(rePlayer.id))
+                {
+                    UnityEngine.Debug.Log("Leeave");
+                    Destroy(ActivePlayers[rePlayer.id].gameObject);
+                    ActivePlayers.Remove(rePlayer.id);
+
+                    // Update positions
+                    foreach (var player in ActivePlayers)
+                    {
+                        SetPlayerPosition(player.Value.gameObject, player.Value.PlayerId);
+                    }
+                }
+
+                // Changes hats
+                if (rePlayer.GetNegativeButtonDown("Left") && ActivePlayers.ContainsKey(rePlayer.id))
+	            {
+                    ActivePlayers[rePlayer.id].PrevHat();
+                    UnityEngine.Debug.Log("Hat prev");
+	            }
+
+	            if (rePlayer.GetButtonDown("Right") && ActivePlayers.ContainsKey(rePlayer.id))
+	            {
+                    ActivePlayers[rePlayer.id].NextHat();
+                    UnityEngine.Debug.Log("Hat next");
+                }
+
+                // Start game with more than 1 player
+	            if (rePlayer.GetButtonDown("Start") && ActivePlayers.ContainsKey(rePlayer.id) && ActivePlayers.Count > 1)
 	            {
 	                // TODO check if players ready
 	                StartCoroutine(GameStart());
@@ -56,6 +113,12 @@ public class GameController : MonoBehaviour
 	    }
 
 	}
+
+    private List<PlayerControls> AlivePlayers()
+    {
+        var w = ActivePlayers.Where(player => player.Value.IsAlive).ToList();
+        return w.Select(player => player.Value).ToList();
+    }
 
     private PlayerControls CreatePlayer(int id)
     {
@@ -95,6 +158,9 @@ public class GameController : MonoBehaviour
 
     IEnumerator GameStart()
     {
+        _gameIsStarting = true;
+        if (GameStateChanged != null)
+            GameStateChanged();
         // TODO  move players to center
         yield return StartCoroutine(CenterPlayers());
 
@@ -105,7 +171,27 @@ public class GameController : MonoBehaviour
 
         // Explode spawn
         Explode();
+        
         _gameStarted = true;
+        if (GameStateChanged != null)
+            GameStateChanged();
+    }
+
+    IEnumerator ResetGame(PlayerControls winner)
+    {
+        foreach (var player in ActivePlayers)
+        {
+            player.Value.Reset();
+            player.Value.DisablePlayer();
+            SetPlayerPosition(player.Value.gameObject, player.Value.PlayerId);
+        }
+
+        _gameStarted = false;
+        _gameIsStarting = false;
+        _gameOver = false;
+        if (GameStateChanged != null)
+            GameStateChanged();
+        yield return null;
     }
 
     private void Explode()

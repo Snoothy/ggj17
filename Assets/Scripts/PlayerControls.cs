@@ -1,4 +1,4 @@
-﻿﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
@@ -12,7 +12,7 @@ public class PlayerControls : MonoBehaviour
     public Rigidbody rbody;
     public Vector3 jumpForce, stompForce;
     public float movespeed = 3;
-    public float maxspeed = 3;
+    public float maxspeed = 3, maxspeed_vertical = 50;
 
     private MoveState _stateInner = MoveState.none;
     private GameController GameController;
@@ -93,7 +93,7 @@ public class PlayerControls : MonoBehaviour
     public GameObject DustPrefab;
 
     private Rewired.Player player;
-
+    private Hat Hats;
     public Renderer MyRenderer;
     public SpriteRenderer MyFace;
     public Sprite FaceNormal, FaceStunned, FacePound, FaceCharging, FaceJump;
@@ -106,12 +106,39 @@ public class PlayerControls : MonoBehaviour
 
     public Animator anim;
 
+    public bool IsAlive = true;
+
     public void Setup(int playerid, PlayerColor mycolor, GameController gameController)
     {
         DisablePlayer();
         GameController = gameController;
         PlayerId = playerid;
         SetColor(mycolor);
+
+        // Hats 
+        var hatRes = Resources.Load("prefabs/Hat");
+        var hatGo = (GameObject)Instantiate(hatRes);
+        var playerSprite = gameObject.transform.FindChild("PlayerSprite");
+        hatGo.transform.parent = playerSprite;
+        hatGo.transform.localPosition = new Vector3(0.0f, 2.5f, -0.01f);
+        Hats = hatGo.GetComponent<Hat>();
+        Hats.SetHat(playerid + 1);
+    }
+
+    public void Reset()
+    {
+        IsAlive = true;
+        rbody.velocity = Vector3.zero;
+        state = MoveState.hit;
+    }
+
+    public void Die()
+    {
+        if(IsAlive)
+        {
+            IsAlive = false;
+            SoundManager.Instance.PlaySound(SoundManager.Instance.acExplode);
+        }
     }
 
     static int TEMPVAR = 1;
@@ -151,7 +178,7 @@ public class PlayerControls : MonoBehaviour
 
     void Update()
     {
-        if (!GameController.IsGameStarted())
+        if (!GameController.IsGameStarted() || !IsAlive)
         {
 
             return;
@@ -226,6 +253,18 @@ public class PlayerControls : MonoBehaviour
             isGrounded = true;
             lastGroundedTime = Time.time;
         }
+        else if (collision.collider.tag == "Bumper")
+        {
+            Bumper bump = collision.transform.GetComponent<Bumper>();
+            if (bump != null)
+            {
+                bump.DoBump();
+                Vector3 val = (transform.position - collision.contacts[0].point).normalized + Vector3.up * 0.3f + new Vector3(0, -rbody.velocity.y / 10, 0);
+                rbody.velocity = Vector3.zero;
+                rbody.AddForce(val * bump.force, ForceMode.VelocityChange);
+                state = MoveState.hit;
+            }
+        }
     }
 
     private void OnCollisionStay(Collision collision)
@@ -243,10 +282,17 @@ public class PlayerControls : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        Stomp stomper = other.transform.parent.GetComponent<Stomp>();
-        if (other.tag == "Stomp" && stomper != null && stomper.color != color && IsHittable)
+        if (other.tag == "Stomp")
         {
-            PerformStompHit((transform.position - other.transform.position).normalized + Vector3.up * 0.3f, stomper.force);
+            Stomp stomper = other.transform.parent.GetComponent<Stomp>();
+            if(stomper != null && stomper.color != color && IsHittable)
+            {
+                PerformStompHit((transform.position - other.transform.position).normalized + Vector3.up * 0.3f, stomper.force);
+            }
+        }
+        else if (other.tag == "KillZone")
+        {
+            Die();
         }
     }
 
@@ -291,12 +337,12 @@ public class PlayerControls : MonoBehaviour
 
     public void NextHat()
     {
-        // TODO
+        if (Hats != null) Hats.NextHat();
     }
 
     public void PrevHat()
     {
-        // TODO
+        if (Hats != null) Hats.PrevHat();
     }
 
     public void DoStomp()
@@ -304,14 +350,15 @@ public class PlayerControls : MonoBehaviour
         if (!isGrounded && state == MoveState.jumping)// && state == MoveState.chargingStomp)
         {
             RaycastHit info;
+            float range = maxStompRange;
             if (Physics.Raycast(transform.position, Vector3.down, out info, 50, 1 << LayerMask.NameToLayer("Ground")))
             {
-                float range = Mathf.Abs(transform.position.y - info.point.y - 0.5f);
+                range = Mathf.Abs(transform.position.y - info.point.y - 0.5f);
                 //currentStompForce = stompForce.y * Mathf.Clamp(Time.time - lastStompTimestamp, minStompCharge, maxStompCharge);
-                currentStompForce = range / maxStompRange * stompForce.y;
-                state = MoveState.prepareStomp;
-                StartCoroutine(StompAfterDelay());
             }
+            currentStompForce = (range / maxStompRange) * stompForce.y;
+            state = MoveState.prepareStomp;
+            StartCoroutine(StompAfterDelay());
             SoundManager.Instance.PlaySound(SoundManager.Instance.acStompBegin);
         }
     }
@@ -347,11 +394,17 @@ public class PlayerControls : MonoBehaviour
                 tempInputV.y = rbody.velocity.y;
                 rbody.velocity = tempInputV;
             }
+            tempInputV = rbody.velocity;
+            if(Mathf.Abs(tempInputV.y) > maxspeed_vertical)
+            {
+                tempInputV.y = tempInputV.y > 0 ? maxspeed_vertical : -maxspeed_vertical;
+                rbody.velocity = tempInputV;
+            }
             /*if (!isInTheAir && rbody.velocity.magnitude > maxspeed)
             {
                 rbody.velocity = rbody.velocity.normalized * maxspeed;
             }*/
-            if(state == MoveState.none)
+            if (state == MoveState.none)
                 anim.SetBool("isWalking", true);
             else
                 anim.SetBool("isWalking", false);
@@ -383,6 +436,8 @@ public class PlayerControls : MonoBehaviour
         state = MoveState.hit;
         lastJumpTimestamp = Time.time;
         SoundManager.Instance.PlaySound(SoundManager.Instance.acHit);
+		if(rbody.velocity.magnitude > 8)
+            SoundManager.Instance.PlaySound(SoundManager.Instance.acHardHit);
     }
 }
 
