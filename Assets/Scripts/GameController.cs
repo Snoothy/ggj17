@@ -65,6 +65,12 @@ public class GameController : MonoBehaviour
 	                var player = CreatePlayer(rePlayer.id);
 	            }
 
+                // Show who you are
+                if (rePlayer.GetButtonDown("Jump") && ActivePlayers.ContainsKey(rePlayer.id))
+                {
+                    // TODO
+                }
+
                 // Leave
                 if (rePlayer.GetButtonDown("Leave") && ActivePlayers.ContainsKey(rePlayer.id))
                 {
