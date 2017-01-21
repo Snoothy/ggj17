@@ -10,8 +10,10 @@ public class Stomp : MonoBehaviour
     public float force = 5;
     public Renderer MyRenderer;
      
-    public void Init(int playerid, Color _color)
+    public void Init(int playerid, Color _color, float forceNormalized)
     {
+        force = force * forceNormalized;
+        endScale = endScale * forceNormalized;
         belongsToPlayerId = playerid;
         GameObject.Destroy(this.gameObject, scaleTime);
         StartCoroutine(DoScale());

@@ -10,10 +10,10 @@ public class StompController : MonoBehaviour
         PlayerControls.OnStomp += PlayerControls_OnStomp;
     }
 
-    private void PlayerControls_OnStomp(Vector3 pos, int playerid, Color color)
+    private void PlayerControls_OnStomp(Vector3 pos, int playerid, Color color, float normalizedForce)
     {
         pos.y = 0;
         GameObject go = (GameObject)GameObject.Instantiate(stompPrefab, pos, stompPrefab.transform.rotation);
-        go.GetComponent<Stomp>().Init(playerid, color);
+        go.GetComponent<Stomp>().Init(playerid, color, normalizedForce);
     }
 }

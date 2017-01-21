@@ -5,7 +5,7 @@ using UnityEngine;
 
 public class PlayerControls : MonoBehaviour
 {
-    public static event Action<Vector3, int, Color> OnStomp;
+    public static event Action<Vector3, int, Color, float> OnStomp;
 
     public int PlayerId = 0;
     public Rigidbody rbody;
@@ -26,9 +26,13 @@ public class PlayerControls : MonoBehaviour
     public float currentStompForce = 0;
     public float stompStunTimeMax = 1.5f;
 
+    public float maxStompRange = 10;
+    public float stompDelay = 0.3f;
+
     private Rewired.Player player;
 
     public Renderer MyRenderer;
+    public ParticleSystem psystem;
 
     public void Setup(int playerid)
     {
@@ -40,10 +44,10 @@ public class PlayerControls : MonoBehaviour
         switch (PlayerId)
         {
             case 0: MyRenderer.material.color = Color.red; break;
-            case 1: MyRenderer.material.color = Color.yellow; break;
+            case 1: MyRenderer.material.color = Color.blue; break;
             case 2: MyRenderer.material.color = Color.green; break;
-            case 3: MyRenderer.material.color = Color.black; break;
-            case 4: MyRenderer.material.color = Color.blue; break;
+            case 3: MyRenderer.material.color = Color.yellow; break;
+            case 4: MyRenderer.material.color = Color.black; break;
             case 5: MyRenderer.material.color = Color.grey; break;
         }
         transform.position += Vector3.right * PlayerId;
@@ -67,24 +71,32 @@ public class PlayerControls : MonoBehaviour
         if (state == MoveState.hit)
             return; 
 
+        if(state == MoveState.prepareStomp)
+        {
+            rbody.velocity = Vector3.zero;
+        }
+
         if (player.GetButtonDown("Jump"))
         {
             if (isGrounded)
-                ChargeJump();
-            else
-                ChargeStomp();
-        }
-
-        if (player.GetButtonUp("Jump"))
-        {
-            if (isGrounded)
+                //ChargeJump();
                 DoJump();
             else
                 DoStomp();
+            //else
+            //   ChargeStomp();
         }
 
+        /*if (player.GetButtonUp("Jump"))
+        {
+            if (isGrounded)
+                DoJump();
+            //else
+            //    DoStomp();
+        }*/
+
         //cannot move while charging stuff
-        if (state == MoveState.chargingJump || state == MoveState.chargingStomp)
+        if (/*state == MoveState.chargingJump ||*/ state == MoveState.chargingStomp)
             return;
 
         /*if (player.GetButtonDown("Stomp"))
@@ -92,7 +104,7 @@ public class PlayerControls : MonoBehaviour
             DoStomp();
         }*/
 
-        DoInput(player.GetAxis("Move Horizontal"), player.GetAxis("Move Vertically"));
+        DoInput(player.GetAxis("Move Horizontal"), player.GetAxis("Move Vertically"), state == MoveState.chargingJump);
     }
 
     void OnCollisionEnter(Collision collision)
@@ -132,20 +144,21 @@ public class PlayerControls : MonoBehaviour
         }
     }
 
-    public void ChargeJump()
+    /*public void ChargeJump()
     {
         if(isGrounded && state != MoveState.chargingJump && state != MoveState.jumping)
         {
             state = MoveState.chargingJump;
             lastJumpTimestamp = Time.time;
         }
-    }
+    }*/
 
     public void DoJump()
     {
-        if (isGrounded && state == MoveState.chargingJump)
+        if (isGrounded)// && state == MoveState.chargingJump)
         {
-            currentJumpForce = jumpForce.y * Mathf.Clamp(Time.time - lastJumpTimestamp, minJumpCharge, maxJumpCharge);
+            //currentJumpForce = jumpForce.y * Mathf.Clamp(Time.time - lastJumpTimestamp, minJumpCharge, maxJumpCharge);
+            currentJumpForce = jumpForce.y * maxJumpCharge;
             rbody.AddForce(currentJumpForce * Vector3.up, ForceMode.VelocityChange);
             isGrounded = false;
             state = MoveState.jumping;
@@ -153,34 +166,66 @@ public class PlayerControls : MonoBehaviour
         }
     }
 
-    public void ChargeStomp()
+    /*public void ChargeStomp()
     {
         if(!isGrounded && state != MoveState.chargingStomp && state != MoveState.stomping)
         {
             state = MoveState.chargingStomp;
             lastStompTimestamp = Time.time;
         }
-    }
+    }*/
 
     public void DoStomp()
     {
-        if (!isGrounded && state == MoveState.chargingStomp)
+        if (!isGrounded)// && state == MoveState.chargingStomp)
         {
-            currentStompForce = stompForce.y * Mathf.Clamp(Time.time - lastStompTimestamp, minStompCharge, maxStompCharge);
-            rbody.AddForce(currentStompForce * Vector3.up, ForceMode.VelocityChange);
-            state = MoveState.stomping;
+            RaycastHit info;
+            if(Physics.Raycast(transform.position, Vector3.down, out info, 50, 1<<LayerMask.NameToLayer("Ground")))
+            {
+                float range = Mathf.Abs(transform.position.y - info.point.y - 0.5f);
+                //currentStompForce = stompForce.y * Mathf.Clamp(Time.time - lastStompTimestamp, minStompCharge, maxStompCharge);
+                currentStompForce = range / maxStompRange * stompForce.y;
+                state = MoveState.prepareStomp;
+                StartCoroutine(StompAfterDelay());
+            }
         }
     }
 
-    public void DoInput(float x, float y)
+    IEnumerator StompAfterDelay()
+    {
+        float timer = stompDelay;
+        Transform t = transform;
+        Vector3 tpos = t.position;
+        Vector3 tposAdd = Vector3.up * 0.25f;
+        while(timer > 0)
+        {
+            timer -= Time.deltaTime;
+            t.position = tpos + (1f - timer / stompDelay) * tposAdd;
+            yield return null;
+        }
+
+        rbody.AddForce(currentStompForce * Vector3.up, ForceMode.VelocityChange);
+        state = MoveState.stomping;
+    }
+
+    Vector3 tempInputV;
+    public void DoInput(float x, float y, bool ischargingjump)
     {
         if(x != 0 || y != 0)
         {
-            rbody.AddForce(new Vector3(x * movespeed, 0, y * movespeed) * (isInTheAir ? 0.25f : 1f), ForceMode.VelocityChange);
-            if (!isInTheAir && rbody.velocity.magnitude > maxspeed)
+            rbody.AddForce(new Vector3(x, 0, y) * movespeed * (isInTheAir ? 0.25f : 1f) * (ischargingjump ? 0.8f : 1f), ForceMode.VelocityChange);
+            tempInputV = rbody.velocity;
+            tempInputV.y = 0;
+            if (tempInputV.magnitude > maxspeed)
+            {
+                tempInputV = tempInputV.normalized * maxspeed;
+                tempInputV.y = rbody.velocity.y;
+                rbody.velocity = tempInputV;
+            }
+            /*if (!isInTheAir && rbody.velocity.magnitude > maxspeed)
             {
                 rbody.velocity = rbody.velocity.normalized * maxspeed;
-            }
+            }*/
         }
     }
 
@@ -190,8 +235,10 @@ public class PlayerControls : MonoBehaviour
         state = MoveState.afterStomp;
         if(OnStomp != null)
         {
-            OnStomp(position, PlayerId, MyRenderer.material.color);
+            OnStomp(position, PlayerId, MyRenderer.material.color, currentStompForce/stompForce.y);
+            Debug.Log("STOMP TIME: " + currentStompForce / stompForce.y);
         }
+        psystem.Emit(20);
     }
 
     void PerformStompHit(Vector3 dir, float force)
@@ -203,4 +250,4 @@ public class PlayerControls : MonoBehaviour
     }
 }
 
-public enum MoveState { none, chargingJump, chargingStomp, stomping, jumping, hit, afterStomp }
+public enum MoveState { none, chargingJump, chargingStomp, stomping, jumping, hit, afterStomp, prepareStomp }
