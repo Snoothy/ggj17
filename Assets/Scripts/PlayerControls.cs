@@ -16,6 +16,7 @@ public class PlayerControls : MonoBehaviour
 
     private MoveState _stateInner = MoveState.none;
     private GameController GameController;
+    private int Wins = 0;
 
     public MoveState state
     {
@@ -129,6 +130,7 @@ public class PlayerControls : MonoBehaviour
     {
         IsAlive = true;
         rbody.velocity = Vector3.zero;
+        Wins = 0;
     }
 
     public void Die()
@@ -160,6 +162,23 @@ public class PlayerControls : MonoBehaviour
             case PlayerColor.red: MyRenderer.material.color = Color.red; break;
             case PlayerColor.teal: MyRenderer.material.color = new Color(2, 250, 255); break;
             case PlayerColor.yellow: MyRenderer.material.color = Color.yellow; break;
+        }
+    }
+
+    public void Win()
+    {
+        Wins++;
+        switch (Wins)
+        {
+            case 1:
+
+                break;
+            case 2:
+
+                break;
+            case 3:
+
+                break;
         }
     }
 
