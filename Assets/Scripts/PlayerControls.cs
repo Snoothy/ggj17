@@ -1,4 +1,4 @@
-﻿﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
@@ -93,7 +93,7 @@ public class PlayerControls : MonoBehaviour
     public GameObject DustPrefab;
 
     private Rewired.Player player;
-
+    private Hat Hats;
     public Renderer MyRenderer;
     public SpriteRenderer MyFace;
     public Sprite FaceNormal, FaceStunned, FacePound, FaceCharging, FaceJump;
@@ -114,6 +114,15 @@ public class PlayerControls : MonoBehaviour
         GameController = gameController;
         PlayerId = playerid;
         SetColor(mycolor);
+
+        // Hats
+        var hatRes = Resources.Load("prefabs/Hat");
+        var hatGo = (GameObject)Instantiate(hatRes);
+        var playerSprite = gameObject.transform.FindChild("PlayerSprite");
+        hatGo.transform.parent = playerSprite;
+        hatGo.transform.localPosition = new Vector3(0.0f, 2.5f, -0.01f);
+        Hats = hatGo.GetComponent<Hat>();
+        Hats.SetHat(playerid + 1);
     }
 
     public void Reset()
@@ -317,12 +326,12 @@ public class PlayerControls : MonoBehaviour
 
     public void NextHat()
     {
-        // TODO
+        if (Hats != null) Hats.NextHat();
     }
 
     public void PrevHat()
     {
-        // TODO
+        if (Hats != null) Hats.PrevHat();
     }
 
     public void DoStomp()
@@ -377,7 +386,7 @@ public class PlayerControls : MonoBehaviour
             {
                 rbody.velocity = rbody.velocity.normalized * maxspeed;
             }*/
-            if(state == MoveState.none)
+            if (state == MoveState.none)
                 anim.SetBool("isWalking", true);
             else
                 anim.SetBool("isWalking", false);
@@ -409,7 +418,7 @@ public class PlayerControls : MonoBehaviour
         state = MoveState.hit;
         lastJumpTimestamp = Time.time;
         SoundManager.Instance.PlaySound(SoundManager.Instance.acHit);
-        if(rbody.velocity.magnitude > 8)
+		if(rbody.velocity.magnitude > 8)
             SoundManager.Instance.PlaySound(SoundManager.Instance.acHardHit);
     }
 }
