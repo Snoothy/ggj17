@@ -436,7 +436,7 @@ public class PlayerControls : MonoBehaviour
         state = MoveState.hit;
         lastJumpTimestamp = Time.time;
         SoundManager.Instance.PlaySound(SoundManager.Instance.acHit);
-		if(rbody.velocity.magnitude > 8)
+		if((dir * force).magnitude > 12)
             SoundManager.Instance.PlaySound(SoundManager.Instance.acHardHit);
     }
 }

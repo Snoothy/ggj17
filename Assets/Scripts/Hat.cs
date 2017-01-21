@@ -33,8 +33,8 @@ public class Hat : MonoBehaviour
         {
             Hats[id].enabled = true;
             CurrentHat = id;
+            SoundManager.Instance.PlayHatSound(id);
         }
-
     }
 
     public void NextHat()

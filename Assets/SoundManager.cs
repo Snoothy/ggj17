@@ -10,6 +10,8 @@ public class SoundManager : MonoBehaviour
     public static SoundManager Instance { get { return _instance; } }
     public AudioSource sourceSingleSounds;
     public AudioClip acJump, acStomp, acStompBegin, acHit, acSelect, acHardHit, acHatOff, acSpawn, acLand, acExplode;
+    [Header("Audio for hats")]
+    public AudioClip[] hatSounds;
 
     public AudioSource source1, source2, source3;
     float[] values = new float[] { 1, 0, 0 };
@@ -75,5 +77,10 @@ public class SoundManager : MonoBehaviour
     public void PlaySound(AudioClip clip)
     {
         sourceSingleSounds.PlayOneShot(clip, 1);
+    }
+
+    public void PlayHatSound(int hatid)
+    {
+        PlaySound(hatSounds[hatid % hatSounds.Length]);
     }
 }
