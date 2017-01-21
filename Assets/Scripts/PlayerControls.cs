@@ -286,6 +286,7 @@ public class PlayerControls : MonoBehaviour
         else if(other.tag == "Bumper")
         {
             Bumper bump = other.transform.GetComponent<Bumper>();
+            Debug.Log("BOOBIES!");
         }
     }
 
