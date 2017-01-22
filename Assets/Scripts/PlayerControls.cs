@@ -113,12 +113,23 @@ public class PlayerControls : MonoBehaviour
 
     public bool IsAlive = true;
 
+    public Color c1 = Color.white;
+    public Color c2 = new Color(1, 1, 1, 0);
+
+        LineRenderer lineRenderer;
+
     public void Setup(int playerid, PlayerColor mycolor, GameController gameController)
     {
         DisablePlayer();
         GameController = gameController;
         PlayerId = playerid;
         SetColor(mycolor);
+
+        lineRenderer = gameObject.GetComponent<LineRenderer>();
+        lineRenderer.material = new Material(Shader.Find("Particles/Additive"));
+        lineRenderer.startColor = MyRenderer.material.color;
+        lineRenderer.endColor = MyRenderer.material.color;
+        lineRenderer.numPositions = 2;
 
         readyContainer = transform.FindChild("Ready");
 
@@ -256,6 +267,24 @@ public class PlayerControls : MonoBehaviour
             return;
         }
         player = Rewired.ReInput.players.GetPlayer("Player" + PlayerId); // get the player by id
+
+        // linerenderer
+        if (lineRenderer != null)
+        {
+            lineRenderer.SetPosition(0, transform.position);
+            RaycastHit info;
+            float range = maxStompRange;
+            if (Physics.Raycast(transform.position, Vector3.down, out info, 50, 1 << LayerMask.NameToLayer("Ground")))
+            {
+                lineRenderer.SetPosition(1, info.point);
+            }
+            else
+            {
+                lineRenderer.SetPosition(1, transform.position + Vector3.down * 20.0f);
+            }
+            
+
+        }
 
         if (state == MoveState.afterStomp)
         {
