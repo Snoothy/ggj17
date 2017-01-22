@@ -79,8 +79,17 @@ public class SoundManager : MonoBehaviour
         values[5] = gc.currentRound >= 6 ? 0.5f : 0;
     }
 
-    public void PlaySound(SoundClip clip)
+    public void PlaySound(SoundClip clip, float delay = -1)
     {
+        if (delay == -1)
+            sourceSingleSounds.PlayOneShot(clip.clip, clip.volume);
+        else
+            StartCoroutine(PlaySoundDelayed(clip, delay));
+    }
+
+    IEnumerator PlaySoundDelayed(SoundClip clip, float deay)
+    {
+        yield return new WaitForSeconds(deay);
         sourceSingleSounds.PlayOneShot(clip.clip, clip.volume);
     }
 

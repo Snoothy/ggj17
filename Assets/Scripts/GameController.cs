@@ -93,6 +93,8 @@ public class GameController : MonoBehaviour
                     }
                 }
 
+                SoundManager.Instance.FadeSplash();
+
             }
         }
         else
@@ -314,7 +316,7 @@ public class GameController : MonoBehaviour
 
     IEnumerator MoveWinner(GameObject winner)
     {
-        SoundManager.Instance.PlaySound(SoundManager.Instance.scVox3);
+        SoundManager.Instance.PlaySound(SoundManager.Instance.scVox3, 0.8f);
 
         var t = winner.transform;
         var size = 2.5f;
