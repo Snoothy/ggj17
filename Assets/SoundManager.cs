@@ -10,9 +10,8 @@ public class SoundManager : MonoBehaviour
     public static SoundManager Instance { get { return _instance; } }
     public AudioSource sourceSingleSounds;
     //public AudioClip acJump, acStomp, acStompBegin, acHit, acSelect, acHardHit, acHatOff, acSpawn, acLand, acExplode;
-    public SoundClip scJump, scStomp, scStompBegin, scHit, scSelect, scHardHit, scHatOff, scSpawn, scLand, scExplode, scVox1, scVox2, scVox3, scVox4;
+    public SoundClip scJump, scStomp, scStompBegin, scHit, scSelect, scHardHit, scHatOff, scSpawn, scLand, scExplode, scVox1, scVox2, scVox3, scVox4, scBack;
     [Header("Audio for hats")]
-    public AudioClip[] hatSounds;
     public SoundClip[] hatSoundClips;
 
     public AudioSource[] sources;
@@ -49,8 +48,8 @@ public class SoundManager : MonoBehaviour
         isSplash = true;
         fadeVal = 0;
 
-        values[0] = 0;
-        values[1] = 0.5f;
+        values[0] = 0.5f;
+        values[1] = 0;
         values[2] = 0;
         values[3] = 0;
         values[4] = 0;
@@ -66,14 +65,18 @@ public class SoundManager : MonoBehaviour
         values[0] = 0;
         values[1] = 0;
         values[2] = 0;
-        int maxWins = 0;
+        /*int maxWins = 0;
         foreach (PlayerControls pc in gc.GetJoinedPlayers())
         {
             maxWins = pc.GetWins > maxWins ? pc.GetWins : maxWins;
         }
         values[3] = maxWins == 0 ? 0.5f : 0;
         values[4] = maxWins == 1 ? 0.5f : 0;
-        values[5] = maxWins == 2 ? 0.5f : 0;
+        values[5] = maxWins == 2 ? 0.5f : 0;*/
+
+        values[3] = gc.currentRound < 3 ? 0.5f : 0;
+        values[4] = gc.currentRound >= 3 && gc.currentRound < 6 ? 0.5f : 0;
+        values[5] = gc.currentRound >= 6 ? 0.5f : 0;
     }
 
     public void PlaySound(SoundClip clip)
@@ -83,7 +86,12 @@ public class SoundManager : MonoBehaviour
 
     public void PlayHatSound(int hatid)
     {
-        PlaySound(hatSoundClips[hatid % hatSounds.Length]);
+        PlaySound(hatSoundClips[hatid % hatSoundClips.Length]);
+    }
+
+    public void PlayRandomHatSound()
+    {
+        PlaySound(hatSoundClips[(int)(UnityEngine.Random.value * hatSoundClips.Length) % hatSoundClips.Length]);
     }
 
     [System.Serializable]

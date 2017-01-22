@@ -18,6 +18,7 @@ public class GameController : MonoBehaviour
     private bool _gameIsStarting = false;
     private bool _gameOver = false;
     private bool _gameEnded = false;
+    public int currentRound = 0;
 
     private Coroutine WinnerRoutine;
 
@@ -68,6 +69,8 @@ public class GameController : MonoBehaviour
                 // Ready
                 if (rePlayer.GetButtonDown("Jump") && ActivePlayers.ContainsKey(rePlayer.id))
                 {
+                    if(!ActivePlayers[rePlayer.id].IsReady)
+                        SoundManager.Instance.PlayRandomHatSound();
                     ActivePlayers[rePlayer.id].SetReady(true);
                 }
 
@@ -81,6 +84,7 @@ public class GameController : MonoBehaviour
                 // Leave
                 if (rePlayer.GetButtonDown("Leave") && ActivePlayers.ContainsKey(rePlayer.id))
                 {
+                    SoundManager.Instance.PlaySound(SoundManager.Instance.scBack);
                     if (ActivePlayers[rePlayer.id].IsReady)
                     {
                         ActivePlayers[rePlayer.id].SetReady(false);
@@ -180,6 +184,7 @@ public class GameController : MonoBehaviour
 
     IEnumerator GameStart()
     {
+        currentRound++;
         SoundManager.Instance.PlaySound(SoundManager.Instance.scSpawn);
         _gameIsStarting = true;
         SoundManager.Instance.FadeBattle();
@@ -210,7 +215,7 @@ public class GameController : MonoBehaviour
                 }
                 ActivePlayers = new Dictionary<int, PlayerControls>();
             }
-
+            currentRound = 0;
             _gameEnded = false;
             _gameStarted = false;
         }
@@ -257,7 +262,7 @@ public class GameController : MonoBehaviour
         var startLocations = new List<Vector3>();
         var transforms = new List<Transform>();
         var startTime = Time.time;
-        var duration = 2.0f;
+        var duration = 1.5f;
         var endTime = startTime + duration;
         foreach (var player in ActivePlayers)
         {
@@ -285,6 +290,8 @@ public class GameController : MonoBehaviour
 
     IEnumerator MoveWinner(GameObject winner)
     {
+        SoundManager.Instance.PlaySound(SoundManager.Instance.scVox2);
+
         var startLocation = winner.transform.position;
         var transforms = winner.transform;
         var startTime = Time.time;

@@ -359,11 +359,11 @@ public class PlayerControls : MonoBehaviour
             Bumper bump = collision.transform.GetComponent<Bumper>();
             if (bump != null)
             {
-                bump.DoBump();
                 Vector3 val = (transform.position - collision.contacts[0].point).normalized + Vector3.up * 0.3f + new Vector3(0, -rbody.velocity.y / 10, 0);
                 rbody.velocity = Vector3.zero;
                 if (isGrounded || state == MoveState.hit)
                 {
+                    SoundManager.Instance.PlaySound(SoundManager.Instance.scHit);
                     val += val * 0.5f + Vector3.up;
                     rbody.AddForce(val * bump.force, ForceMode.VelocityChange);
                     state = MoveState.hit;
@@ -371,6 +371,7 @@ public class PlayerControls : MonoBehaviour
                 }
                 else
                 {
+                    SoundManager.Instance.PlaySound(SoundManager.Instance.scBack);
                     rbody.AddForce(val * bump.force, ForceMode.VelocityChange);
                     state = MoveState.jumping;
                     lastJumpTimestamp = Time.time;
@@ -411,12 +412,17 @@ public class PlayerControls : MonoBehaviour
     bool AmIOnRim(Collider other, Stomp stomper)
     {
         Vector3 centerStomp = other.transform.position;
-        float stompRadius = other.transform.localScale.z / 2f; //or x for that matter
+        float stompRadius = other.transform.parent.localScale.z / 2f; //or x for that matter
         Vector3 distanceToCenter = (centerStomp - transform.position);
         distanceToCenter.y = 0;
         float actualDistToCenter = distanceToCenter.magnitude;
-        if (actualDistToCenter < stompRadius / 2f) //if we are within 0.5 of the radius, we are within the stomp and are not pushed aside
+        float actualDistToEdge = stompRadius - actualDistToCenter;
+        if (actualDistToEdge > 1.5f)
+        {
+            Debug.Log("OMG actualDistToCenter: " + actualDistToCenter + "  actualDistToEdge:" + actualDistToEdge);
             return false;
+        }
+        Debug.Log("actualDistToCenter: " + actualDistToCenter + "  actualDistToEdge:" + actualDistToEdge);
         return true;
     }
 
@@ -447,7 +453,7 @@ public class PlayerControls : MonoBehaviour
     IEnumerator SpawnDust(float delay, Vector3 pos)
     {
         yield return new WaitForSeconds(delay);
-        GameObject.Instantiate(DustPrefab, pos, DustPrefab.transform.rotation);
+        GameObject.Instantiate(DustPrefab, pos + Vector3.down * 0.3f, DustPrefab.transform.rotation);
     }
 
     /*public void ChargeStomp()
@@ -560,7 +566,7 @@ public class PlayerControls : MonoBehaviour
         state = MoveState.hit;
         lastJumpTimestamp = Time.time;
         SoundManager.Instance.PlaySound(SoundManager.Instance.scHit);
-        if (rbody.velocity.magnitude > 8)
+        if (rbody.velocity.magnitude > 6)
             SoundManager.Instance.PlaySound(SoundManager.Instance.scHardHit);
     }
 }
