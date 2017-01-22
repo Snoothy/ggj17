@@ -403,6 +403,7 @@ public class PlayerControls : MonoBehaviour
                     state = MoveState.jumping;
                     lastJumpTimestamp = Time.time;
                 }
+                bump.DoBump();
             }
         }
     }
@@ -427,7 +428,9 @@ public class PlayerControls : MonoBehaviour
             Stomp stomper = other.transform.parent.GetComponent<Stomp>();
             if (stomper != null && stomper.color != color && IsHittable && AmIOnRim(other, stomper))
             {
-                PerformStompHit((transform.position - other.transform.position).normalized + Vector3.up * 0.3f, stomper.force);
+                Vector3 direction = transform.position - other.transform.position;
+                direction.y = 0;
+                PerformStompHit((direction).normalized + Vector3.up * 0.3f, stomper.force);
             }
         }
         else if (other.tag == "KillZone")
@@ -593,7 +596,7 @@ public class PlayerControls : MonoBehaviour
         state = MoveState.hit;
         lastJumpTimestamp = Time.time;
         SoundManager.Instance.PlaySound(SoundManager.Instance.scHit);
-        if (rbody.velocity.magnitude > 6)
+        if (rbody.velocity.magnitude > 5)
             SoundManager.Instance.PlaySound(SoundManager.Instance.scHardHit);
     }
 }
