@@ -136,7 +136,7 @@ public class PlayerControls : MonoBehaviour
         hatGo.transform.parent = playerSprite;
         hatGo.transform.localPosition = new Vector3(0.0f, 2.5f, -0.01f);
         Hats = hatGo.GetComponent<Hat>();
-        Hats.SetHat((int)((Hats.GetHatCount - 1) * UnityEngine.Random.value));
+        Hats.SetHat((int)((Hats.GetHatCount - 1f) * UnityEngine.Random.value));
         ShowReady();
         SetReady(false);
 
