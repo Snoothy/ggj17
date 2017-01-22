@@ -126,13 +126,7 @@ public class PlayerControls : MonoBehaviour
         GameController = gameController;
         PlayerId = playerid;
         SetColor(mycolor);
-
-        lineRenderer = gameObject.GetComponent<LineRenderer>();
-        lineRenderer.material = new Material(Shader.Find("Particles/Additive"));
-        lineRenderer.startColor = MyRenderer.material.color;
-        lineRenderer.endColor = MyRenderer.material.color;
-        lineRenderer.numPositions = 2;
-
+        
         readyContainer = transform.FindChild("Ready");
 
         // Hats 
@@ -142,7 +136,7 @@ public class PlayerControls : MonoBehaviour
         hatGo.transform.parent = playerSprite;
         hatGo.transform.localPosition = new Vector3(0.0f, 2.5f, -0.01f);
         Hats = hatGo.GetComponent<Hat>();
-        Hats.SetHat(playerid + 1);
+        Hats.SetHat((int)((Hats.GetHatCount - 1) * UnityEngine.Random.value));
         ShowReady();
         SetReady(false);
 

@@ -5,11 +5,6 @@ using System.Collections;
 public class ScreenshakeSampleController : MonoBehaviour {
 
 	void Update () {
-		if(Input.GetKeyDown(KeyCode.F)){
-			Camera.main.Shake();
-		}
-		if(Input.GetKeyDown(KeyCode.K)){
-			Camera.main.Kick(Vector3.left);
-		}
+		
 	}
 }

@@ -6,6 +6,7 @@ using UnityEngine;
 public class Hat : MonoBehaviour
 {
     private List<SpriteRenderer> Hats;
+    public float GetHatCount { get { return Hats.Count; } }
     private int CurrentHat = 0;
 	// Use this for initialization
 	void Awake ()
