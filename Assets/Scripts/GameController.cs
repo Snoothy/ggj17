@@ -332,7 +332,12 @@ public class GameController : MonoBehaviour
         }
 
         // TODO confetti and sounds
-        yield return new WaitForSeconds(3.0f);
+        winner.GetComponent<PlayerControls>().EmitConfetti(); 
+        yield return new WaitForSeconds(1.0f);
+        winner.GetComponent<PlayerControls>().EmitConfetti();
+        yield return new WaitForSeconds(1.0f);
+        winner.GetComponent<PlayerControls>().EmitConfetti();
+        yield return new WaitForSeconds(1.0f);
         StartCoroutine(ResetGame(winner.GetComponent<PlayerControls>()));
 
         yield return null;
