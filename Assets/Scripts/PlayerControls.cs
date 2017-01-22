@@ -397,7 +397,7 @@ public class PlayerControls : MonoBehaviour
         if (other.tag == "Stomp")
         {
             Stomp stomper = other.transform.parent.GetComponent<Stomp>();
-            if (stomper != null && stomper.color != color && IsHittable)
+            if (stomper != null && stomper.color != color && IsHittable && AmIOnRim(other, stomper))
             {
                 PerformStompHit((transform.position - other.transform.position).normalized + Vector3.up * 0.3f, stomper.force);
             }
@@ -406,6 +406,18 @@ public class PlayerControls : MonoBehaviour
         {
             Die();
         }
+    }
+
+    bool AmIOnRim(Collider other, Stomp stomper)
+    {
+        Vector3 centerStomp = other.transform.position;
+        float stompRadius = other.transform.localScale.z / 2f; //or x for that matter
+        Vector3 distanceToCenter = (centerStomp - transform.position);
+        distanceToCenter.y = 0;
+        float actualDistToCenter = distanceToCenter.magnitude;
+        if (actualDistToCenter < stompRadius / 2f) //if we are within 0.5 of the radius, we are within the stomp and are not pushed aside
+            return false;
+        return true;
     }
 
     /*public void ChargeJump()
