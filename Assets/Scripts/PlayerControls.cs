@@ -333,8 +333,19 @@ public class PlayerControls : MonoBehaviour
                 bump.DoBump();
                 Vector3 val = (transform.position - collision.contacts[0].point).normalized + Vector3.up * 0.3f + new Vector3(0, -rbody.velocity.y / 10, 0);
                 rbody.velocity = Vector3.zero;
-                rbody.AddForce(val * bump.force, ForceMode.VelocityChange);
-                state = MoveState.hit;
+                if (isGrounded || state == MoveState.hit)
+                {
+                    val += val + Vector3.up;
+                    rbody.AddForce(val * bump.force, ForceMode.VelocityChange);
+                    state = MoveState.hit;
+                    lastJumpTimestamp = Time.time;
+                }
+                else
+                {
+                    rbody.AddForce(val * bump.force, ForceMode.VelocityChange);
+                    state = MoveState.jumping;
+                    lastJumpTimestamp = Time.time;
+                }
             }
         }
     }
