@@ -330,7 +330,7 @@ public class GameController : MonoBehaviour
 
             transforms.position =
                 Vector3.Slerp(startLocation,
-                SpawnPoint.position+Vector3.up*1.0f,
+                SpawnPoint.position+Vector3.up*5.0f-Vector3.forward*15f,
                 fracComplete);
 
             t.localScale = Vector3.Slerp(new Vector3(1.0f, 1.0f, 1.0f), new Vector3(size, size, size), fracComplete);
