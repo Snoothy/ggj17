@@ -46,7 +46,7 @@ public class GameController : MonoBehaviour
             {
                 PlayerControls winner = null;
 
-                if (!_gameOver)
+                if (!_gameOver && !_gameEnded)
                 {
                     winner = AlivePlayers().First();
                     winner.Win();
@@ -59,6 +59,32 @@ public class GameController : MonoBehaviour
 
                     WinnerRoutine = StartCoroutine(MoveWinner(winner.gameObject));
                 }
+            }
+
+            if (_gameEnded)
+            {
+
+                // Check for hard reset
+                foreach (var rePlayer in RePlayers)
+                {
+                    if (rePlayer.GetButtonDown("Start") && ActivePlayers.ContainsKey(rePlayer.id) &&
+                        ActivePlayers.Count > 1)
+                    {
+
+                        if (ActivePlayers.Count > 0)
+                        {
+                            foreach (var player in ActivePlayers)
+                            {
+                                Destroy(ActivePlayers[player.Value.PlayerId].gameObject);
+                            }
+                            ActivePlayers = new Dictionary<int, PlayerControls>();
+                        }
+
+                        _gameEnded = false;
+                        _gameStarted = false;
+                    }
+                }
+
             }
         }
         else
@@ -203,17 +229,17 @@ public class GameController : MonoBehaviour
         // Clean up if game ended
         if (_gameEnded)
         {
-            if (ActivePlayers.Count > 0)
-            {
-                foreach (var player in ActivePlayers)
-                {
-                    Destroy(ActivePlayers[player.Value.PlayerId].gameObject);
-                }
-                ActivePlayers = new Dictionary<int, PlayerControls>();
-            }
+            //if (ActivePlayers.Count > 0)
+            //{
+            //    foreach (var player in ActivePlayers)
+            //    {
+            //        Destroy(ActivePlayers[player.Value.PlayerId].gameObject);
+            //    }
+            //    ActivePlayers = new Dictionary<int, PlayerControls>();
+            //}
 
-            _gameEnded = false;
-            _gameStarted = false;
+            //_gameEnded = false;
+            //_gameStarted = false;
         }
         else
         {
