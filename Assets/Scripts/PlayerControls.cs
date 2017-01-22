@@ -403,6 +403,7 @@ public class PlayerControls : MonoBehaviour
                     state = MoveState.jumping;
                     lastJumpTimestamp = Time.time;
                 }
+                bump.DoBump();
             }
         }
     }
