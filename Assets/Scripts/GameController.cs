@@ -116,7 +116,7 @@ public class GameController : MonoBehaviour
                 // Join game
                 if (rePlayer.GetButtonDown("Jump") && !ActivePlayers.ContainsKey(rePlayer.id))
                 {
-                    var player = CreatePlayer(rePlayer.id);
+                    var player = CreatePlayer(ActivePlayers.Count);
                     SoundManager.Instance.PlaySound(SoundManager.Instance.scSelect);
                 }
 
