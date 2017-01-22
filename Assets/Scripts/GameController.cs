@@ -238,17 +238,18 @@ public class GameController : MonoBehaviour
 
     private void Explode()
     {
-        var rads = Mathf.Deg2Rad * (((360.0f / ActivePlayers.Count) + Random.Range(0.0f, 360.0f) ) % 360.0f);
+        var rads = Mathf.Deg2Rad * (((360.0f / ActivePlayers.Count) ) % 360.0f);
+        var rand = Random.Range(0.0f, 360.0f);
         var force = 10.0f;
         int i = 0;
         foreach (var player in ActivePlayers)
         {
             var rb = player.Value.gameObject.GetComponent<Rigidbody>();
-            rb.AddForce(new Vector3(Mathf.Cos(rads * i), 0.5f, Mathf.Sin(rads * i)) * force, ForceMode.Impulse);
+            rb.AddForce(new Vector3(Mathf.Cos(rads * i + rand), 0.5f, Mathf.Sin(rads * i + rand)) * force, ForceMode.Impulse);
             i++;
         }
 
-        //SoundManager.Instance.PlaySound(SoundManager.Instance.scSpawn);
+        SoundManager.Instance.PlaySound(SoundManager.Instance.scSpawn);
     }
 
     IEnumerator CenterPlayers()
