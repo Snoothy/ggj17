@@ -180,11 +180,10 @@ public class GameController : MonoBehaviour
 
     IEnumerator GameStart()
     {
-        SoundManager.Instance.PlaySound(SoundManager.Instance.scVox3);
+        SoundManager.Instance.PlaySound(SoundManager.Instance.scSpawn);
         _gameIsStarting = true;
         SoundManager.Instance.FadeBattle();
         // Moves players to center
-        // TODO  move players to center
         yield return StartCoroutine(CenterPlayers());
 
         foreach (var player in ActivePlayers)
