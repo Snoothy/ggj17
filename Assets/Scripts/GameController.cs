@@ -65,6 +65,12 @@ public class GameController : MonoBehaviour
             // Player selection
             foreach (var rePlayer in RePlayers)
             {
+                // Ready
+                if (rePlayer.GetButtonDown("Jump") && ActivePlayers.ContainsKey(rePlayer.id))
+                {
+                    ActivePlayers[rePlayer.id].SetReady(true);
+                }
+
                 // Join game
                 if (rePlayer.GetButtonDown("Jump") && !ActivePlayers.ContainsKey(rePlayer.id))
                 {
@@ -72,24 +78,25 @@ public class GameController : MonoBehaviour
                     SoundManager.Instance.PlaySound(SoundManager.Instance.scSelect);
                 }
 
-                // Show who you are
-                if (rePlayer.GetButtonDown("Jump") && ActivePlayers.ContainsKey(rePlayer.id))
-                {
-                    // TODO
-                }
-
                 // Leave
                 if (rePlayer.GetButtonDown("Leave") && ActivePlayers.ContainsKey(rePlayer.id))
                 {
-                    Destroy(ActivePlayers[rePlayer.id].gameObject);
-                    ActivePlayers.Remove(rePlayer.id);
-
-                    // Update positions
-                    var i = 0;
-                    foreach (var player in ActivePlayers)
+                    if (ActivePlayers[rePlayer.id].IsReady)
                     {
-                        SetPlayerPosition(player.Value.gameObject, i);
-                        i++;
+                        ActivePlayers[rePlayer.id].SetReady(false);
+                    }
+                    else
+                    {
+                        Destroy(ActivePlayers[rePlayer.id].gameObject);
+                        ActivePlayers.Remove(rePlayer.id);
+
+                        // Update positions
+                        var i = 0;
+                        foreach (var player in ActivePlayers)
+                        {
+                            SetPlayerPosition(player.Value.gameObject, i);
+                            i++;
+                        }
                     }
                 }
 
@@ -107,8 +114,22 @@ public class GameController : MonoBehaviour
                 // Start game with more than 1 player
                 if (rePlayer.GetButtonDown("Start") && ActivePlayers.ContainsKey(rePlayer.id) && ActivePlayers.Count > 1)
                 {
-                    // TODO check if players ready
-                    StartCoroutine(GameStart());
+                    // Check if players ready
+                    var allReady = true;
+                    foreach (var player in ActivePlayers)
+                    {
+                        allReady &= player.Value.IsReady;
+                    }
+                    if (allReady)
+                    {
+                        foreach (var player in ActivePlayers)
+                        {
+                            player.Value.HideReady();
+                        }
+                        StartCoroutine(GameStart());
+
+                    }
+                        
                 }
             }
         }
