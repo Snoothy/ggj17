@@ -4,6 +4,7 @@ using System.Linq;
 using Rewired;
 using UnityEngine;
 using System;
+using Rewired.Utils.Classes.Data;
 using Random = UnityEngine.Random;
 
 public class GameController : MonoBehaviour
@@ -292,6 +293,8 @@ public class GameController : MonoBehaviour
     {
         SoundManager.Instance.PlaySound(SoundManager.Instance.scVox2);
 
+        var t = winner.transform;
+        var size = 2.5f;
         var startLocation = winner.transform.position;
         var transforms = winner.transform;
         var startTime = Time.time;
@@ -306,6 +309,8 @@ public class GameController : MonoBehaviour
                 Vector3.Slerp(startLocation,
                 SpawnPoint.position+Vector3.up*1.0f,
                 fracComplete);
+
+            t.localScale = Vector3.Slerp(new Vector3(1.0f, 1.0f, 1.0f), new Vector3(size, size, size), fracComplete);
 
             yield return null;
         }
