@@ -229,11 +229,11 @@ public class PlayerControls : MonoBehaviour
         {
             case PlayerColor.blue: MyRenderer.material.color = Color.blue; break;
             case PlayerColor.green: MyRenderer.material.color = Color.green; break;
-            case PlayerColor.orange: MyRenderer.material.color = new Color(255, 176, 32); break;
-            case PlayerColor.pink: MyRenderer.material.color = new Color(255, 170, 207); break;
+            case PlayerColor.orange: MyRenderer.material.color = new Color(255f / 255f, 120f / 255f, 32f / 255f); break; //
+            case PlayerColor.pink: MyRenderer.material.color = new Color(255f / 255f, 170f / 255f, 170f / 255f); break; 
             case PlayerColor.magenta: MyRenderer.material.color = Color.magenta; break;
             case PlayerColor.red: MyRenderer.material.color = Color.red; break;
-            case PlayerColor.teal: MyRenderer.material.color = new Color(2, 250, 255); break;
+            case PlayerColor.teal: MyRenderer.material.color = new Color(2f / 255f, 250f / 255f, 255f / 255f); break;
             case PlayerColor.yellow: MyRenderer.material.color = Color.yellow; break;
         }
     }
