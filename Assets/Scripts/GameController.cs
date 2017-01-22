@@ -13,6 +13,13 @@ public class GameController : MonoBehaviour
     public GameObject PlayerPrefab;
     private List<Rewired.Player> RePlayers = new List<Rewired.Player>();
     private Dictionary<int, PlayerControls> ActivePlayers = new Dictionary<int, PlayerControls>();
+    public int GetActivePlayerCount
+    {
+        get
+        {
+            return ActivePlayers.Count;
+        }
+    }
 
     private bool _gameStarted = false;
     public bool IsGameStarted { get { return _gameStarted; } }
