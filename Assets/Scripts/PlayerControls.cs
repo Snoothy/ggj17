@@ -153,7 +153,7 @@ public class PlayerControls : MonoBehaviour
         IsAlive = true;
         rbody.velocity = Vector3.zero;
         state = MoveState.hit;
-
+        transform.localScale = new Vector3(1f,1f,1f);
         var playerSprite = gameObject.transform.FindChild("PlayerSprite");
         playerSprite.FindChild("winnerflare").GetComponent<SpriteRenderer>().enabled = false;
     }
