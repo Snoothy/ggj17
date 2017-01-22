@@ -16,6 +16,6 @@ public class Rotate : MonoBehaviour
 	void Update ()
 	{
 	    rotation += speed * Time.deltaTime;
-		transform.localRotation = Quaternion.Euler(new Vector3(transform.rotation.eulerAngles.x, rotation, transform.rotation.eulerAngles.z));
+		transform.localRotation = Quaternion.Euler(new Vector3(0, rotation, 0));
 	}
 }
