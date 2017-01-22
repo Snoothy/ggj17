@@ -335,7 +335,7 @@ public class PlayerControls : MonoBehaviour
                 rbody.velocity = Vector3.zero;
                 if (isGrounded || state == MoveState.hit)
                 {
-                    val += val + Vector3.up;
+                    val += val * 0.5f + Vector3.up;
                     rbody.AddForce(val * bump.force, ForceMode.VelocityChange);
                     state = MoveState.hit;
                     lastJumpTimestamp = Time.time;
