@@ -116,7 +116,7 @@ public class GameController : MonoBehaviour
                 // Join game
                 if (rePlayer.GetButtonDown("Jump") && !ActivePlayers.ContainsKey(rePlayer.id))
                 {
-                    var player = CreatePlayer(ActivePlayers.Count);
+                    var player = CreatePlayer(rePlayer.id);
                     SoundManager.Instance.PlaySound(SoundManager.Instance.scSelect);
                 }
 
@@ -189,7 +189,7 @@ public class GameController : MonoBehaviour
     {
         var prefab = Instantiate(PlayerPrefab, SpawnPoint);
         var controls = prefab.GetComponent<PlayerControls>();
-        controls.Setup(id, (PlayerColor)id, this);
+        controls.Setup(id, (PlayerColor)ActivePlayers.Count, this);
         ActivePlayers.Add(id, controls);
         //SoundManager.Instance.PlaySound(SoundManager.Instance.scSpawn);
         // Set position
