@@ -4,6 +4,7 @@ using System.Linq;
 using Rewired;
 using UnityEngine;
 using System;
+using System.Runtime.Remoting.Messaging;
 using Rewired.Utils.Classes.Data;
 using Random = UnityEngine.Random;
 
@@ -56,7 +57,9 @@ public class GameController : MonoBehaviour
 
                 if (!_gameOver && !_gameEnded)
                 {
-                    winner = AlivePlayers().First();
+                    _gameOver = true;
+
+                    winner = AlivePlayers().FirstOrDefault();
                     winner.Win();
                     winner.DisablePlayer();
                     _gameOver = true;
@@ -339,14 +342,13 @@ public class GameController : MonoBehaviour
 
             yield return null;
         }
-
+        var player = winner.GetComponent<PlayerControls>();
         // TODO confetti and sounds
-        winner.GetComponent<PlayerControls>().EmitConfetti(); 
-        yield return new WaitForSeconds(1.0f);
-        winner.GetComponent<PlayerControls>().EmitConfetti();
-        yield return new WaitForSeconds(1.0f);
-        winner.GetComponent<PlayerControls>().EmitConfetti();
-        yield return new WaitForSeconds(1.0f);
+        if (player.GetWins >= 3)
+        {
+            player.Confetti(true);
+        }
+        yield return new WaitForSeconds(3.0f);
         StartCoroutine(ResetGame(winner.GetComponent<PlayerControls>()));
 
         yield return null;
