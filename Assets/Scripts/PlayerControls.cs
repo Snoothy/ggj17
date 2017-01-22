@@ -103,6 +103,8 @@ public class PlayerControls : MonoBehaviour
     public SpriteRenderer MyFace;
     public Sprite FaceNormal, FaceStunned, FacePound, FaceCharging, FaceJump;
     public ParticleSystem psystem;
+    public ParticleSystem conf1;
+    public ParticleSystem conf2;
 
     public Screenshake screenshaker;
 
@@ -145,7 +147,32 @@ public class PlayerControls : MonoBehaviour
         SetReady(false);
 
         ResetWins();
-        
+
+        // Confetti
+        conf1 = transform.FindChild("Confetti1").GetComponent<ParticleSystem>();
+        conf2 = transform.FindChild("Confetti2").GetComponent<ParticleSystem>();
+        conf1.Stop();
+        conf2.Stop();
+    }
+
+    public void Confetti(bool start)
+    {
+        if (start)
+        {
+            conf1.Play();
+            conf2.Play();
+        }
+        else
+        {
+            conf1.Stop();
+            conf2.Stop();
+        }
+    }
+
+    public void EmitConfetti()
+    {
+        conf1.Emit(100);
+        conf2.Emit(100);
     }
 
     public void Reset()
