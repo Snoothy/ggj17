@@ -101,12 +101,12 @@ public class GameController : MonoBehaviour
                 }
 
                 // Changes hats
-                if (rePlayer.GetNegativeButtonDown("Left") && ActivePlayers.ContainsKey(rePlayer.id))
+                if (rePlayer.GetNegativeButtonDown("Left") && ActivePlayers.ContainsKey(rePlayer.id) && !ActivePlayers[rePlayer.id].IsReady)
                 {
                     ActivePlayers[rePlayer.id].PrevHat();
                 }
 
-                if (rePlayer.GetButtonDown("Right") && ActivePlayers.ContainsKey(rePlayer.id))
+                if (rePlayer.GetButtonDown("Right") && ActivePlayers.ContainsKey(rePlayer.id) && !ActivePlayers[rePlayer.id].IsReady)
                 {
                     ActivePlayers[rePlayer.id].NextHat();
                 }
@@ -180,6 +180,7 @@ public class GameController : MonoBehaviour
 
     IEnumerator GameStart()
     {
+        SoundManager.Instance.PlaySound(SoundManager.Instance.);
         _gameIsStarting = true;
         SoundManager.Instance.FadeBattle();
         // Moves players to center
