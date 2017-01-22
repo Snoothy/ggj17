@@ -10,7 +10,7 @@ public class SoundManager : MonoBehaviour
     public static SoundManager Instance { get { return _instance; } }
     public AudioSource sourceSingleSounds;
     //public AudioClip acJump, acStomp, acStompBegin, acHit, acSelect, acHardHit, acHatOff, acSpawn, acLand, acExplode;
-    public SoundClip scJump, scStomp, scStompBegin, scHit, scSelect, scHardHit, scHatOff, scSpawn, scLand, scExplode, scVox1, scVox2, scVox3, scVox4, scBack;
+    public SoundClip scJump, scStomp, scStompBegin, scHit, scSelect, scHardHit, scHatOff, scSpawn, scLand, scExplode, scVox1, scVox2, scVox3, scVox4, scBack, scSiren;
     [Header("Audio for hats")]
     public SoundClip[] hatSoundClips;
 

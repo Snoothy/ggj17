@@ -255,7 +255,7 @@ public class GameController : MonoBehaviour
             i++;
         }
 
-        SoundManager.Instance.PlaySound(SoundManager.Instance.scSpawn);
+        SoundManager.Instance.PlaySound(SoundManager.Instance.scSiren);
     }
 
     IEnumerator CenterPlayers()
@@ -291,7 +291,7 @@ public class GameController : MonoBehaviour
 
     IEnumerator MoveWinner(GameObject winner)
     {
-        SoundManager.Instance.PlaySound(SoundManager.Instance.scVox2);
+        SoundManager.Instance.PlaySound(SoundManager.Instance.scVox3);
 
         var t = winner.transform;
         var size = 2.5f;
